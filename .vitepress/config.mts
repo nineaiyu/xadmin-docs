@@ -59,7 +59,19 @@ export default defineConfig({
                         link: '/example/new-app-test'
                     },
                 ]
-            }
+            },
+            {
+                text: '进阶开发',
+                items: [
+                    {
+                        text: '数据权限',
+                        link: '/advanced/data-permission'
+                    }, {
+                        text: '字段权限',
+                        link: '/advanced/field-permission'
+                    }
+                ]
+            },
         ],
 
         socialLinks: [

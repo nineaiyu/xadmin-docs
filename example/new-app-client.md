@@ -1,6 +1,6 @@
 # 前端操作
 
-### 1.在 ```src/views/```目录下创建```demo```目录，目录结构如下
+## 1.在 ```src/views/```目录下创建```demo```目录，目录结构如下
 ```shell
 └── book
     ├── form.vue
@@ -11,12 +11,12 @@
         └── types.ts
 ```
 
-### 2.```api.ts``` 内容如下，主要用于接口访问
+## 2.```api.ts``` 内容如下，主要用于接口访问
 ```ts
 import { BaseApi } from "@/api/base";
 export const bookApi = new BaseApi("/api/demo/book");
 ```
-### 3. ```hook.tsx```内容如下
+## 3. ```hook.tsx```内容如下
 ```tsx
 import dayjs from "dayjs";
 import Form from "../form.vue";
@@ -175,7 +175,7 @@ export function useDemoBookForm(props) {
 
 
 ```
-### 4. ```types.ts``` 
+## 4. ```types.ts``` 
 ```ts
 interface FormItemProps {}
 
@@ -187,7 +187,7 @@ interface FormProps {
 
 export type { FormItemProps, FormProps };
 ```
-### 5.编写新增更新的form页面```form.vue```
+## 5.编写新增更新的form页面```form.vue```
 ```vue
 <script lang="ts" setup>
   import { ref } from "vue";
@@ -225,7 +225,7 @@ export type { FormItemProps, FormProps };
 
 ```
 
-### 6.编写table页面```index.vue```
+## 6.编写table页面```index.vue```
 ```vue
 <script lang="ts" setup>
   import { ref } from "vue";
@@ -252,7 +252,7 @@ export type { FormItemProps, FormProps };
   />
 </template>
 ```
-### 7.添加中英字段名称 
+## 7.添加中英字段名称 
 ```locales/zh-CN.yaml```
 ```yaml
 demoBook:

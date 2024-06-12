@@ -11,7 +11,7 @@ nodejs >=20
 redis >=6
 mariadb > 10.5 或 mysql > 8.0
 ```
-#### 支持的数据库如下：
+## 支持的数据库
 - PostgreSQL
 - MariaDB
 - MySQL
