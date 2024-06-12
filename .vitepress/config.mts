@@ -6,9 +6,7 @@ export default defineConfig({
     description: "可快速开发的全栈管理系统",
     appearance:'dark',
     outDir: './dist',
-    ignoreDeadLinks:[
-        /.xlsx$/
-    ],
+    // ignoreDeadLinks:true,
     themeConfig: {
 
         search: {
