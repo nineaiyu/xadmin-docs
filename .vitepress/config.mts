@@ -5,6 +5,7 @@ export default defineConfig({
     title: "xAdmin",
     description: "可快速开发的全栈管理系统",
     appearance:'dark',
+    outDir: './dist',
     themeConfig: {
 
         search: {
