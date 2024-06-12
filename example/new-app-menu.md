@@ -21,4 +21,4 @@
 ```
 
 ## 该demo菜单附件如下，可直接下载导入到菜单中
-[export_menu_2024-06-12_16-24-14.xlsx.zip](assets/export_menu_2024-06-12_16-24-14.zip)
+[export_menu_2024-06-12_16-24-14.xlsx.zip](../export_menu_2024-06-12_16-24-14.zip)
