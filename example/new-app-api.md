@@ -49,6 +49,7 @@ from demo import models
 class BookSerializer(BaseModelSerializer):
     class Meta:
         model = models.Book
+        ## pk 字段用于前端删除，更新等标识，如果有删除更新等，必须得加上pk 字段
         fields = ['pk', 'name', 'isbn', 'author', 'publisher', 'publication_date', 'price', 'is_active', 'created_time',
                   'updated_time']
         read_only_fields = ['pk']
