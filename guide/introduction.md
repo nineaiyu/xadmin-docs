@@ -1,6 +1,7 @@
 # 项目目录
 
 ## 整体目录结构
+
 ```shell
 ├── common                    // 项目工具类库，包含各种封装方法
 ├── docker-compose.yml        // docker compose 运行文件
@@ -19,8 +20,8 @@
 └── config.py                 // 运行配置文件，包含数据库，Redis等配置信息
 ```
 
-
 ## 项目配置文件```config.py```
+
 ```shell
 
 # debug为false的时候，如果遇到静态文件无法访问，比如api文档无法正常打开，需要通过下面命令收集静态文件

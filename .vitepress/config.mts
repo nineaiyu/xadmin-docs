@@ -4,7 +4,7 @@ import {defineConfig} from 'vitepress'
 export default defineConfig({
     title: "xAdmin",
     description: "可快速开发的全栈管理系统",
-    appearance:'dark',
+    appearance: 'dark',
     outDir: './dist',
     // ignoreDeadLinks:true,
     themeConfig: {
@@ -37,10 +37,25 @@ export default defineConfig({
                         text: '项目介绍',
                         link: '/guide/introduction'
                     },
+
+                ]
+            },
+            {
+                text: '安装部署',
+                items: [
                     {
-                        text: '安装部署',
-                        link: '/guide/installation'
-                    }
+                        text: '本地部署',
+                        link: '/guide/installation-local'
+                    }, {
+                        text: '容器化部署',
+                        link: '/guide/installation-docker'
+                    }, {
+                        text: 'NGINX部署',
+                        link: '/guide/installation-nginx'
+                    },{
+                        text: 'MariaDB本地安装部署(可选)',
+                        link: '/guide/installation-mariadb'
+                    },
                 ]
             },
             {
@@ -49,13 +64,13 @@ export default defineConfig({
                     {
                         text: '后端操作',
                         link: '/example/new-app-api'
-                    },                    {
+                    }, {
                         text: '前端操作',
                         link: '/example/new-app-client'
-                    },                    {
+                    }, {
                         text: '添加菜单',
                         link: '/example/new-app-menu'
-                    },                    {
+                    }, {
                         text: '测试效果',
                         link: '/example/new-app-test'
                     },

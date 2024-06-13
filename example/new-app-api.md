@@ -1,18 +1,22 @@
 # 后端操作
 
 ## 1.创建 django app
+
 ```shell
 python3 manage.py startapp demo
 ```
 
 ## 2.在 ```config.py``` 里面添加我们的app
+
 ```shell
 # 需要将创建的应用写到里面 # 文件位置 config.py
 XADMIN_APPS = [
     'demo.apps.DemoConfig',
 ]
 ```
+
 ## 3.编写models
+
 ```shell
 # 文件位置 demo/models.py
 
@@ -37,8 +41,11 @@ class Book(DbAuditModel):
     def __str__(self):
         return f"{self.name}"
 ```
+
 ## 4.编写序列化器
+
 #### 在```demo```目录中，新创建一个```utils```目录，然后在```utils```目录中创建```serializer.py```文件
+
 ```shell
 # 文件位置 demo/utils/serializer.py
 
@@ -55,7 +62,9 @@ class BookSerializer(BaseModelSerializer):
         read_only_fields = ['pk']
         # fields_unexport = ['pk']  # 导入导出文件时，忽略该字段
 ```
+
 ## 5.编写视图
+
 ```shell
 # 文件位置 demo/views.py
 
@@ -96,6 +105,7 @@ class BookView(BaseModelSet, ImportExportDataAction):
 ```
 
 ## 6.新建```urls.py```路由文件，并添加路由
+
 ```shell
 # 文件位置 demo/urls.py
 
@@ -115,6 +125,7 @@ urlpatterns = router.urls
 ```
 
 ## 7.新建```config.py```文件，添加相关配置
+
 ```shell
 # 文件位置 demo/config.py
 from django.urls import path, include
@@ -129,6 +140,7 @@ PERMISSION_WHITE_REURL = []
 ```
 
 ## 8.迁移demo应用
+
 ```shell
 python manage.py makemigrations
 python manage.py migrate

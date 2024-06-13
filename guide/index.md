@@ -19,9 +19,10 @@ xadmin 是基于 Django5 + vue3 + element-plus ，目标是快速开发,高效�
 
 演示地址： https://xadmin.dvcloud.xin
 
-账户： admin  密码： admin123
+账户： admin 密码： admin123
 
 ## 服务端开发参考文档
+
 django: https://docs.djangoproject.com/zh-hans/5.0/
 
 django-rest-framework: https://www.django-rest-framework.org/
@@ -33,6 +34,7 @@ django-filter: https://django-filter.readthedocs.io/en/stable/
 django-rest-framework-simplejwt: https://django-rest-framework-simplejwt.readthedocs.io/en/latest/
 
 ## 前端开发参考文档
+
 vue: https://cn.vuejs.org/guide/introduction.html
 
 element-plus: https://element-plus.org/zh-CN/component/overview.html
@@ -40,6 +42,7 @@ element-plus: https://element-plus.org/zh-CN/component/overview.html
 plus-pro-components： https://plus-pro-components.com/
 
 ## 前端基于pure-admin二次开发
+
 pure-admin： https://pure-admin.github.io/pure-admin-doc/
 
 ## 交流群
