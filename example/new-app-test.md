@@ -4,4 +4,7 @@
 ![img_3.png](assets/img_3.png)
 ![img_5.png](assets/img_5.png)
 
+## 普通用户登录
+
+![img_10.png](assets/img_10.png)
 OK，基础教程已经到此结束了，剩下的就靠自己来摸索实现了。

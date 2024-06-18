@@ -71,6 +71,9 @@ export default defineConfig({
                         text: '添加菜单',
                         link: '/example/new-app-menu'
                     }, {
+                        text: '添加权限',
+                        link: '/example/new-app-data-permission'
+                    }, {
                         text: '测试效果',
                         link: '/example/new-app-test'
                     },
