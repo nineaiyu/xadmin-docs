@@ -9,7 +9,7 @@ python3 manage.py startapp demo
 ## 2.在 ```config.py``` 里面添加我们的app
 
 ```shell
-# 需要将创建的应用写到里面 # 文件位置 config.py
+# 需要将创建的应用写到里面 # 文件位置 config.py ,否则菜单中，找不到模型关联
 XADMIN_APPS = [
     'demo.apps.DemoConfig',
 ]
