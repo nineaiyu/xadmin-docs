@@ -120,8 +120,6 @@ router.register('book', BookView, basename='book')
 urlpatterns = [
 ]
 urlpatterns += router.urls
-
-urlpatterns = router.urls
 ```
 
 ## 7.新建```config.py```文件，添加相关配置
