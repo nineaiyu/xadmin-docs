@@ -90,6 +90,14 @@ export default defineConfig({
                         link: '/advanced/field-permission'
                     }
                 ]
+            },{
+                text: '常见问题',
+                items: [
+                    {
+                        text: '常见问题',
+                        link: '/problem/one'
+                    }
+                ]
             },
         ],
 
