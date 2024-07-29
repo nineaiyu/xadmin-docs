@@ -24,6 +24,8 @@ filter_queryset = self.filter_queryset(self.get_queryset())
 
 ![add-data-permission-rules.png](imgs/data-permission/add-data-permission-rules.png)
 
+匹配 里面的字段参考： https://docs.djangoproject.com/zh-hans/5.0/ref/models/querysets/#field-lookups
+
 将该数据权限分配给用户即可
 
 # 详细原理步骤 ```common.core.filter.get_filter_queryset```
