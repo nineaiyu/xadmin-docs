@@ -75,6 +75,7 @@ pip install -r requirements.txt
 ## 7.生成数据表并迁移
 
 ```shell
+python manage.py compilemessages
 python manage.py makemigrations
 python manage.py migrate
 ```
