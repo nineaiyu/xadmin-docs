@@ -130,6 +130,6 @@ VITE_WSS_DOMAIN="wss://xadmin.dvcloud.xin"
 
 ```shell
 cd /data/xadmin/xadmin-client
-pnpm install
+pnpm install --frozen-lockfile
 pnpm build
 ```
