@@ -72,12 +72,16 @@ cd /data/xadmin/xadmin-server
 pip install -r requirements.txt
 ```
 
-## 7.生成数据表并迁移
+## 7.1 生成数据表并迁移
 
 ```shell
-python manage.py compilemessages
 python manage.py makemigrations
 python manage.py migrate
+```
+## 7.2 收集静态资源，编译国际化
+```shell
+python manage.py collectstatic
+python manage.py compilemessages
 ```
 
 ## 8.创建超级管理员(操作之前必须配置好Redis和数据库)
@@ -109,11 +113,13 @@ cd /data/xadmin/
 git clone https://github.com/nineaiyu/xadmin-client.git
 ```
 
-## 12.安装构建所需环境
-
+## 12. 通过官网安装22版本的node环境
 ```shell
-dnf module switch-to nodejs:20 -y
-dnf install npm -y
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+nvm install 22
+source ~/.bashrc
+node -v # layouts.download.codeBox.shouldPrint
+npm -v # layouts.download.codeBox.shouldPrint
 npm install -g pnpm
 ```
 
