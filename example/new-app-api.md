@@ -165,10 +165,7 @@ URLPATTERNS = [
 ]
 
 # 请求白名单，支持正则表达式，可参考settings.py里面的 PERMISSION_WHITE_URL
-PERMISSION_WHITE_REURL = [
-    "^/api/demo/.*choices$",
-    "^/api/demo/.*search-fields$",
-]
+PERMISSION_WHITE_REURL = []
 ```
 
 ## 8.迁移demo应用
