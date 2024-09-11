@@ -78,10 +78,11 @@ pip install -r requirements.txt
 python manage.py makemigrations
 python manage.py migrate
 ```
-## 7.2 收集静态资源，编译国际化
+## 7.2 收集静态资源，编译国际化，下载IP数据库
 ```shell
 python manage.py collectstatic
 python manage.py compilemessages
+python manage.py download_ip_db -f
 ```
 
 ## 8.创建超级管理员(操作之前必须配置好Redis和数据库)
