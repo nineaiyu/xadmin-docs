@@ -155,6 +155,12 @@ systemctl restart mariadb
 echo -e '\n127.0.0.1 mariadb' >> /etc/hosts   # 用于添加mysql本地解析
 ```
 
+## 2.1 本项目使用了数据库时区转换，需要配置时区 [官方文档](https://mariadb.com/kb/en/mariadb-tzinfo-to-sql/)
+
+```shell
+mariadb-tzinfo-to-sql /usr/share/zoneinfo | mariadb -u root mysql
+```
+
 ## 3.创建服务所需的数据库和用户授权信息
 ```shell
 mysql
