@@ -69,7 +69,8 @@ class Book(DbAuditModel):
 ```shell
 # 文件位置 demo/utils/serializer.py
 
-from common.core.serializers import BaseModelSerializer, LabeledChoiceField, BasePrimaryKeyRelatedField
+from common.core.fields import LabeledChoiceField, BasePrimaryKeyRelatedField
+from common.core.serializers import BaseModelSerializer
 from demo import models
 
 
@@ -107,6 +108,7 @@ from django_filters import rest_framework as filters
 
 from common.core.filter import BaseFilterSet
 from common.core.modelset import BaseModelSet, ImportExportDataAction
+from common.core.pagination import DynamicPageNumber
 from demo.models import Book
 from demo.utils.serializer import BookSerializer
 
@@ -132,6 +134,7 @@ class BookView(BaseModelSet, ImportExportDataAction):
     serializer_class = BookSerializer
     ordering_fields = ['created_time']
     filterset_class = BookFilter
+    pagination_class = DynamicPageNumber(1000)
 
 ```
 
