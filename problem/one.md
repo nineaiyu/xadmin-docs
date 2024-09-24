@@ -1,4 +1,4 @@
-## 1. 前端不显示验证码或者提示服务器不允许登录
+## 1. 前端不显示验证码或者提示服务器不允许登录，或者接口文档打开异常
 
 - a.可能是后端api服务未启动
 - b.前端未使用代理访问，出现跨域问题，代理需要在```vite.config.ts```中配置```proxy```字段
@@ -20,3 +20,25 @@
 
 ## 4. 服务器国际化不生效
 - a. 执行命令 ```python manage.py compilemessages```
+
+## 5.项目使用mariadb数据库，访问首页 提示报错
+
+![img_1.png](img_1.png)
+![img_2.png](img_2.png)
+
+- a. 这种一般是数据库为设置时区数据，可参考文档 [官方文档](https://mariadb.com/kb/en/mariadb-tzinfo-to-sql/)，或者进行
+  mariadb 部署的服务器或者容器，执行下面命令
+
+```shell
+mariadb-tzinfo-to-sql /usr/share/zoneinfo | mariadb -u root mysql
+```
+
+## 6.Demo例子运行一切正常，但按这个例子自己做了一个新的，结果前端页面没有任何显示，但查看后台返回的3个API返回结果都正常
+
+- a. 这种一般是菜单定义的权限和前端代码里面的auth权限不一致导致的
+  ![7616e55dc512797055995cc091094e62.png](7616e55dc512797055995cc091094e62.png)
+
+## 7.菜单开启缓存未生效
+
+- a.菜单里面定义的组件名要和 前端里面定义的组件名一致
+  ![07.png](07.png)
