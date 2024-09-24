@@ -75,14 +75,7 @@ cd /data/xadmin/xadmin-server/
 docker compose build
 ```
 
-## 3.A启动api服务（使用默认的sqlite作为数据库）（3.A和3.B任选一个进行操作）
-
-```shell
-cd /data/xadmin/xadmin-server/
-docker compose up -d  # -d 参数是后台运行，如果去掉，则前台运行
-```
-
-## 3.B启动api服务（使用mariadb作为数据库）
+## 3.A启动api服务（使用mariadb作为数据库） （3.A和3.B任选一个进行操作）
 
 ### 修改```config.py```
 
@@ -103,10 +96,41 @@ DB_OPTIONS = {'init_command': 'SET sql_mode="STRICT_TRANS_TABLES"', 'charset': '
 ```
 
 ```shell
-mkdir -pv /data/xadmin/mariadb/{data,logs}
-chown 1001.1001 -R /data/xadmin/mariadb/{data,logs}
+mkdir -pv /data/xadmin/xadmin-mariadb/{data,logs}
+chown 1001.1001 -R /data/xadmin/xadmin-mariadb/{data,logs}
 cd /data/xadmin/xadmin-server/
-docker compose -f docker-compose-prod.yml up -d  # -d 参数是后台运行，如果去掉，则前台运行
+docker compose up -d  # -d 参数是后台运行，如果去掉，则前台运行
+```
+
+添加mysql时区支持
+
+```shell
+docker exec -it xadmin-mariadb sh -c 'mariadb-tzinfo-to-sql /usr/share/zoneinfo | mariadb -u root mysql'
+```
+
+## 3.B启动api服务（使用sqlite作为数据库，不推荐）
+
+### 修改```config.py```
+
+```shell
+# mysql 数据库配置
+# create database xadmin default character set utf8 COLLATE utf8_general_ci;
+# grant all on xadmin.* to server@'127.0.0.1' identified by 'KGzKjZpWBp4R4RSa';
+# DB_ENGINE = 'django.db.backends.mysql'
+# DB_HOST = 'mariadb'
+# DB_PORT = 3306
+# DB_USER = 'server'
+# DB_DATABASE = 'xadmin'
+# DB_PASSWORD = 'KGzKjZpWBp4R4RSa'
+# DB_OPTIONS = {'init_command': 'SET sql_mode="STRICT_TRANS_TABLES"', 'charset': 'utf8mb4'}
+
+## sqlite3 配置，和 mysql配置 二选一, 默认sqlite数据库
+DB_ENGINE = 'django.db.backends.sqlite3'
+```
+
+```shell
+cd /data/xadmin/xadmin-server/
+docker compose -f docker-compose-sqlite.yml up -d  # -d 参数是后台运行，如果去掉，则前台运行
 ```
 
 ## 4.创建管理员用户，导入默认菜单，权限，角色等数据（仅新部署执行一次）
