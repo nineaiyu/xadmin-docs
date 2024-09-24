@@ -98,6 +98,7 @@ DB_OPTIONS = {'init_command': 'SET sql_mode="STRICT_TRANS_TABLES"', 'charset': '
 ```shell
 mkdir -pv /data/xadmin/xadmin-mariadb/{data,logs}
 chown 1001.1001 -R /data/xadmin/xadmin-mariadb/{data,logs}
+chown 1001.1001 -R /data/xadmin/xadmin-server/ # 为了安全考虑，容器使用非root用户启动服务
 cd /data/xadmin/xadmin-server/
 docker compose up -d  # -d 参数是后台运行，如果去掉，则前台运行
 ```
