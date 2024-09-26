@@ -26,7 +26,7 @@
 ![img_1.png](img_1.png)
 ![img_2.png](img_2.png)
 
-- a. 这种一般是数据库为设置时区数据，可参考文档 [官方文档](https://mariadb.com/kb/en/mariadb-tzinfo-to-sql/)，或者进行
+- a. 这种一般是数据库未设置时区数据，可参考文档 [官方文档](https://mariadb.com/kb/en/mariadb-tzinfo-to-sql/)，或者进行
   mariadb 部署的服务器或者容器，执行下面命令
 
 ```shell

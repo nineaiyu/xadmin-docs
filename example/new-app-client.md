@@ -54,8 +54,8 @@ import { reactive } from "vue";
 import { hasAuth } from "@/router/utils";
 
 export function useDemoBook() {
-    // 权限判断，用于判断是否有该权限
     const api = reactive(bookApi);
+    // 权限判断，用于判断是否有该权限，下面权限定义要和菜单中的权限保持一致
     const auth = reactive({
         list: hasAuth("list:demoBook"),
         create: hasAuth("create:demoBook"),
@@ -77,20 +77,20 @@ export function useDemoBook() {
 
 ```vue
 <script lang="ts" setup>
-  import RePlusCRUD from "@/components/RePlusCRUD";
-  import { useDemoBook } from "./utils/hook";
+  import {RePlusPage} from "@/components/RePlusPage";
+  import {useDemoBook} from "./utils/hook";
 
-  const { api, auth } = useDemoBook();
+  const {api, auth} = useDemoBook();
 </script>
 <template>
-  <RePlusCRUD :api="api" :auth="auth" locale-name="demoBook" />
+  <RePlusPage :api="api" :auth="auth" locale-name="demoBook"/>
 </template>
 ```
 
 # 合并写法-如果业务比较简单，可以把上面的2，3，4步代码合并为一个文件里面```index.vue```
 ```vue
 <script lang="ts" setup>
-import RePlusCRUD from "@/components/RePlusCRUD";
+  import {RePlusPage} from "@/components/RePlusPage";
 import { reactive } from "vue";
 import { hasAuth } from "@/router/utils";
 
@@ -111,7 +111,7 @@ const auth = reactive({
 });
 </script>
 <template>
-  <RePlusCRUD :api="bookApi" :auth="auth" locale-name="demoBook" />
+  <RePlusPage :api="bookApi" :auth="auth" locale-name="demoBook"/>
 </template>
 ```
 
