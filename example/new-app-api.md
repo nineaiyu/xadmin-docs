@@ -126,7 +126,7 @@ class BookFilter(BaseFilterSet):
                   'created_time']  # fields用于前端自动生成的搜索表单
 
 
-class BookView(BaseModelSet, ImportExportDataAction):
+class BookViewSet(BaseModelSet, ImportExportDataAction):
     """
     书籍管理
     """
@@ -145,11 +145,11 @@ class BookView(BaseModelSet, ImportExportDataAction):
 
 from rest_framework.routers import SimpleRouter
 
-from demo.views import BookView
+from demo.views import BookViewSet
 
 router = SimpleRouter(False)  # 设置为 False ,为了去掉url后面的斜线
 
-router.register('book', BookView, basename='book')
+router.register('book', BookViewSet, basename='book')
 
 urlpatterns = [
 ]
