@@ -59,6 +59,15 @@ export default defineConfig({
                 ]
             },
             {
+                text: '开发指南',
+                items: [
+                    {
+                        text: '服务端开发',
+                        link: '/devguidelines/server'
+                    }
+                ]
+            },
+            {
                 text: '入门Demo示例',
                 items: [
                     {
