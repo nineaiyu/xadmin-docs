@@ -64,6 +64,10 @@ export default defineConfig({
                     {
                         text: '服务端开发',
                         link: '/devguidelines/server'
+                    },
+                    {
+                        text: '客户端开发',
+                        link: '/devguidelines/client'
                     }
                 ]
             },
