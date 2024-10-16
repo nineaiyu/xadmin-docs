@@ -45,7 +45,7 @@ class DbAuditModel(DbBaseModel):
 2.数据权限查询的时候，分两种，一种是部门权限，一种是用户单独授权，这两种权限是或模式，也就是任意匹配对应权限就返回
 
 ```python
-    if not SysConfig.PERMISSION_DATA or queryset is None:
+    if not settings.PERMISSION_DATA_ENABLED or queryset is None:
         return queryset
 
     if user_obj.is_superuser:

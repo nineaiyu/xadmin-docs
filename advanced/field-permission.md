@@ -15,31 +15,46 @@
 
 #### 为什么要关联这四个模型？
 
-代码中```system/utils/serializer.py```部分代码如下
+代码中```system/serializers/base.py```部分代码如下
 
 ```python
 class BaseRoleRuleInfo(BaseModelSerializer):
-    roles_info = RoleSerializer(fields=['pk', 'name'], many=True, read_only=True, source='roles')
-    rules_info = DataPermissionSerializer(fields=['pk', 'name'], many=True, read_only=True, source='rules')
-    mode_type = LabeledChoiceField(choices=models.ModeTypeAbstract.ModeChoices.choices)
+    roles = BasePrimaryKeyRelatedField(queryset=UserRole.objects, allow_null=True, required=False, format="{name}",
+                                       attrs=['pk', 'name', 'code'], label=_("Role permission"), many=True)
+    rules = BasePrimaryKeyRelatedField(queryset=DataPermission.objects, allow_null=True, required=False, many=True,
+                                       format="{name}", attrs=['pk', 'name', 'get_mode_type_display'],
+                                       label=_("Data permission"))
+    mode_type = LabeledChoiceField(choices=ModeTypeAbstract.ModeChoices.choices, label=_("Mode type"),
+                                   default=ModeTypeAbstract.ModeChoices.OR.value)
 
 
 class UserSerializer(BaseRoleRuleInfo):
     class Meta:
-        model = models.UserInfo
-        fields = ['username', 'nickname', 'email', 'last_login', 'gender', 'date_joined', 'roles', 'rules', 'is_active',
-                  'pk', 'dept', 'mobile', 'avatar', 'roles_info', 'description', 'dept_info', 'rules_info', 'mode_type']
+        model = UserInfo
+        fields = ['pk', 'avatar', 'username', 'nickname', 'phone', 'email', 'gender', 'block', 'is_active',
+                  'password', 'dept', 'description', 'last_login', 'date_joined', 'roles', 'rules', 'mode_type']
+
         extra_kwargs = {'last_login': {'read_only': True}, 'date_joined': {'read_only': True},
                         'rules': {'read_only': True}, 'pk': {'read_only': True}, 'avatar': {'read_only': True},
-                        'roles': {'read_only': True}}
-        # extra_kwargs = {'password': {'write_only': True}}
-        read_only_fields = ['pk'] + list(set([x.name for x in models.UserInfo._meta.fields]) - set(fields))
+                        'roles': {'read_only': True}, 'dept': {'required': True}, 'password': {'write_only': True},
+                        'email': {'validators': [UniqueValidator(queryset=UserInfo.objects.all())]},
+                        'phone': {'validators': [UniqueValidator(queryset=UserInfo.objects.all())]},
+                        }
+        read_only_fields = ['pk'] + list(set([x.name for x in UserInfo._meta.fields]) - set(fields))
 
-    dept_info = DeptSerializer(fields=['name', 'pk'], read_only=True, source='dept')
-    gender = LabeledChoiceField(choices=models.UserInfo.GenderChoices.choices)
+        table_fields = ['pk', 'avatar', 'username', 'nickname', 'gender', 'block', 'is_active', 'dept', 'phone',
+                        'last_login', 'date_joined', 'roles', 'rules']
+
+    dept = BasePrimaryKeyRelatedField(queryset=DeptInfo.objects, allow_null=True, required=False,
+                                      attrs=['pk', 'name', 'parent_id'], label=_("Department"), format="{name}")
+    gender = LabeledChoiceField(choices=UserInfo.GenderChoices.choices,
+                                default=UserInfo.GenderChoices.UNKNOWN, label=_("Gender"))
+
+    block = input_wrapper(serializers.SerializerMethodField)(read_only=True, input_type='boolean',
+                                                             label=_("Login blocked"))
 ```
 
-获取用户的序列化方法，里面使用了```roles_info 角色模型```，```dept_info 部门模型```，```rules_info 数据权限模型```
+获取用户的序列化方法，里面使用了```roles 角色模型```，```dept 部门模型```，```rules 数据权限模型```
 ，还有自己本身的```UserInfo 模型```
 
 ### 2. 在 角色权限中，创建角色，并关联字段
@@ -53,12 +68,15 @@ class UserSerializer(BaseRoleRuleInfo):
 #### 为什么角色信息，数据权限中，进勾选了 ```Id (pk)```,```角色名称|数据权限名称 (name)```
 
 ```python
-roles_info = RoleSerializer(fields=['pk', 'name'], many=True, read_only=True, source='roles')
-dept_info = DeptSerializer(fields=['name', 'pk'], read_only=True, source='dept')
+roles = BasePrimaryKeyRelatedField(queryset=UserRole.objects, allow_null=True, required=False, format="{name}",
+                                   attrs=['pk', 'name', 'code'], label=_("Role permission"), many=True)
+rules = BasePrimaryKeyRelatedField(queryset=DataPermission.objects, allow_null=True, required=False, many=True,
+                                   format="{name}", attrs=['pk', 'name', 'get_mode_type_display'],
+                                   label=_("Data permission"))
 ```
 
 这两个，因为上面定义的用户序列化方法中，仅仅使用了这两个字段, 其他字段无需勾选，勾选也不会显示，如果要想显示其他字段，则需在修改如下
 
 ```python
-roles_info = RoleSerializer(all_fields=True, many=True, read_only=True, source='roles')
+roles = RoleSerializer(ignore_field_permission=True, many=True, read_only=True, source='roles')
 ```
