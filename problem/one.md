@@ -42,3 +42,6 @@ mariadb-tzinfo-to-sql /usr/share/zoneinfo | mariadb -u root mysql
 
 - a.菜单里面定义的组件名要和 前端里面定义的组件名一致
   ![07.png](07.png)
+
+## 7.非默认的80，443端口，导致头像等图片文件资源无法使用
+- 参考文档 NGINX部署 ```#proxy_set_header X-Forwarded-Host $host:$server_port;  # 非默认的80，443端口，则需要打开该配置```

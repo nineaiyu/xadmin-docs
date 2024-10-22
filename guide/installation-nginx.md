@@ -7,13 +7,35 @@ dnf module switch-to nginx:1.24 -y
 dnf install nginx -y
 ```
 
-## 2.添加 Nginx 反向代理配置，新创建文件```/etc/nginx/conf.d/xadmin.conf```
+## 2.1添加 xadmin-api 服务配置，新创建文件```/etc/nginx/conf.d/xadmin-api-conf```
+
+```shell
+proxy_pass http://127.0.0.1:8896;
+proxy_buffering off;
+proxy_request_buffering off;
+proxy_http_version 1.1;
+proxy_set_header Host $host;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection $http_connection;
+proxy_set_header X-Forwarded-For $remote_addr;
+#proxy_set_header X-Forwarded-Host $host:$server_port;  # 非默认的80，443端口，则需要打开该配置
+proxy_set_header X-Forwarded-Proto $scheme;
+#proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;  # 如果上层还有其他 slb 需要使用 $proxy_add_x_forwarded_for 获取真实 ip
+
+proxy_ignore_client_abort on;
+proxy_connect_timeout 600;
+proxy_send_timeout 600;
+proxy_read_timeout 600;
+send_timeout 6000;
+```
+
+## 2.2添加 Nginx 反向代理配置，新创建文件```/etc/nginx/conf.d/xadmin.conf```
 
 ```shell
 server {
     listen       80;
     server_name xadmin.dvcloud.xin; # 填写自己的域名
-    
+
 #    # ssl 相关配置
 #    listen 443 ssl;
 #    ssl_certificate        /data/cert/xadmin.dvcloud.xin.pem; # 填写自己的域名证书
@@ -36,35 +58,32 @@ server {
 
     root /data/xadmin/xadmin-client/dist/;
     index index.html index.htm;
-    
-    location ~ ^/(api|ws|flower|media|api-docs) {
-        proxy_pass http://127.0.0.1:8896;
-        proxy_buffering off;
-        proxy_request_buffering off;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection $http_connection;
-        proxy_set_header X-Forwarded-For $remote_addr;
-        # proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;  # 如果上层还有其他 slb 需要使用 $proxy_add_x_forwarded_for 获取真实 ip
-    
-        proxy_ignore_client_abort on;
-        proxy_connect_timeout 600;
-        proxy_send_timeout 600;
-        proxy_read_timeout 600;
-        send_timeout 6000;
+
+    # 资源服务直接通过nginx访问，减少服务端压力
+    location ^~ /media/ {
+        alias /data/xadmin/xadmin-server/upload/;
+        try_files $uri $uri/ @media;
     }
 
-    
-    location / {
-      try_files $uri $uri/ /index.html;
+    location @media {
+        include conf.d/xadmin-api-conf;
     }
-    
+
+    # api 服务
+    location ~ ^/(api|ws|flower|media|api-docs) {
+        include conf.d/xadmin-api-conf;
+    }
+
+    # 前端
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
     error_page   500 502 503 504  /50x.html;
     location = /50x.html {
-      root   /usr/share/nginx/html;
+        root   /usr/share/nginx/html;
     }
-    
+
     location ~ ^/(\.user.ini|\.htaccess|\.git|\.svn|\.project|LICENSE|README.md)
     {
         return 404;
