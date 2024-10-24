@@ -51,6 +51,12 @@ sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/dock
 sudo yum install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
+##### 【可选】如果官方源，上面命令安装比较慢，可以使用下面命令，切换为清华源，然后再执行上面安装命令
+
+```shell
+sed -i 's+https://download.docker.com+https://mirrors.tuna.tsinghua.edu.cn/docker-ce+' /etc/yum.repos.d/docker-ce.repo
+```
+
 ```shell
 sudo systemctl start docker
 ```
@@ -79,6 +85,19 @@ docker compose build
 
 ### 修改```config.py```
 
+## SECRET_KEY: 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
+
+```shell
+cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49;echo
+```
+
+将上面的命令生成的字符串填写到 ```SECRET_KEY``` 里面
+
+```shell
+# 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
+# $ cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49;echo
+SECRET_KEY = 'django-insecure-mlq6(#a^2vk!1=7=xhp#$i=o5d%namfs=+b26$m#sh_2rco7j^'
+```
 ```shell
 # mysql 数据库配置
 # create database xadmin default character set utf8 COLLATE utf8_general_ci;
@@ -91,7 +110,7 @@ DB_DATABASE = 'xadmin'
 DB_PASSWORD = 'KGzKjZpWBp4R4RSa'
 DB_OPTIONS = {'init_command': 'SET sql_mode="STRICT_TRANS_TABLES"', 'charset': 'utf8mb4'}
 
-## sqlite3 配置，和 mysql配置 二选一, 默认sqlite数据库
+## sqlite3 配置，和 mysql配置 二选一, 默认mysql数据库
 #DB_ENGINE = 'django.db.backends.sqlite3'
 ```
 
