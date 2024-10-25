@@ -1,26 +1,26 @@
 # 项目目录
 
-## 整体目录结构
+## server 整体目录结构
 
 ```shell
-├── captcha                     //图片验证码APP
-├── common                      // 项目工具类库，包含各种封装方法
-├── config.py                   // 运行配置文件，包含数据库，Redis等配置信息
+├── captcha                     #图片验证码应用
+├── common                      # 项目工具类库，包含各种封装方法
+├── config.py                   # 运行配置文件，包含数据库，Redis等配置信息
 ├── docker-compose-sqlite.yml
-├── docker-compose.yml          // docker compose 运行文件
-├── Dockerfile                  // 用与构建容器镜像文件
+├── docker-compose.yml          # docker compose 运行文件
+├── Dockerfile                  # 用与构建容器镜像文件
 ├── LICENSE
-├── loadjson                  // 默认的菜单，权限，字段配置
-├── locale                    // 国际化配置，支持中文和英语
-├── logs                      // 运行日志
+├── loadjson                  # 默认的菜单，权限，字段配置
+├── locale                    # 国际化配置，支持中文和英语
+├── logs                      # 运行日志
 ├── manage.py
-├── message                   // websocket 消息
-├── notifications               // 站内信，消息通知推送APP
+├── message                   # websocket 消息
+├── notifications             # 站内信，消息通知推送应用
 ├── README.md
-├── requirements.txt          // Django 运行依赖
-├── server                    // 项目主应用
-├── settings                  // 项目相关配置APP
-└── system                    // system App，包含用户，菜单，日志，角色等
+├── requirements.txt          # Django 运行依赖
+├── server                    # 项目主应用
+├── settings                  # 项目相关配置应用
+└── system                    # 系统应用，包含用户，菜单，日志，角色等
 
 ```
 
@@ -78,3 +78,52 @@ CELERY_BEAT_SCHEDULE = {}
 HTTP_LISTEN_PORT = 8896
 GUNICORN_MAX_WORKER = 4 # API服务最多启动的worker数量
 ```
+
+## client 整体目录结构
+
+```shell
+├── build
+├── build.sh                            # 构建就脚本
+├── commitlint.config.js
+├── docker-compose.yml                  # docker compose 运行文件
+├── Dockerfile                          # 用与构建容器镜像文件
+├── eslint.config.js
+├── index.html
+├── LICENSE
+├── locales                             # 国际化
+├── mock
+├── package.json                        # 环境依赖
+├── pnpm-lock.yaml
+├── postcss.config.js
+├── public
+├── src                                 # 主要源码
+│   ├── api                 # 接口api
+│   ├── App.vue
+│   ├── assets
+│   ├── components          # 组件库
+│       ├── RePlusSearch    # 后端对应搜索组件-重要！！！
+│       ├── RePlusPage      # 页面组件-重要！！！
+│   ├── config              # 项目配置
+│   ├── constants
+│   ├── directives
+│   ├── layout              # 项目框架
+│   ├── main.ts
+│   ├── plugins
+│   ├── router              # 路由
+│   ├── store
+│   ├── style
+│   ├── utils           
+│   └── views               #页面
+├── stylelint.config.js
+├── tailwind.config.ts
+├── tsconfig.json
+├── types
+└── vite.config.ts
+
+```
+
+## 核心代码
+
+前端需要悉知 RePlusSearch 和 RePlusPage 组件
+
+后端common/core里面的相关代码
