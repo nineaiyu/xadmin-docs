@@ -177,3 +177,9 @@ PERMISSION_WHITE_REURL = []
 python manage.py makemigrations
 python manage.py migrate
 ```
+
+## 9.同步模型字段，或者在web页面字段管理里面，点击重新生成字段数据按钮
+
+```shell
+python manage.py sync_model_field
+```
