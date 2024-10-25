@@ -1,25 +1,15 @@
 services:
   xadmin-docs-build:
     container_name: xadmin-docs-build
-    image: "xadmin-docs-build"
+    image: xadmin-node:22.10.0-alpine
+    environment:
+      - TZ=Asia/Shanghai
     volumes:
       - ./:/app
     build:
       context: .
-      dockerfile: Dockerfile.build
+      dockerfile: Dockerfile
     command:
       - sh
       - -c
       - pnpm install --frozen-lockfile && pnpm run docs:build
-
-  xadmin-docs-prod:
-    container_name: xadmin-docs-prod
-    restart: always
-    image: "nginx:stable-alpine"
-    volumes:
-      - ./dist:/usr/share/nginx/html
-    command: [ "nginx", "-g", "daemon off;" ]
-    #depends_on:
-    #   - xadmin-client-build
-    ports:
-      - 8891:80
