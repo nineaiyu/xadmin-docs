@@ -47,7 +47,10 @@ export default defineConfig({
                         text: '本地部署',
                         link: '/guide/installation-local'
                     }, {
-                        text: '容器化部署',
+                        text: '容器化部署-脚本',
+                        link: '/guide/installation-docker-shell'
+                    }, {
+                        text: '容器化部署-详细',
                         link: '/guide/installation-docker'
                     }, {
                         text: 'NGINX部署',
