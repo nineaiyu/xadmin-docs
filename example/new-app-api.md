@@ -22,27 +22,45 @@ XADMIN_APPS = [
 
 from django.db import models
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
+from pilkit.processors import ResizeToFill
 
 from common.core.models import DbAuditModel, upload_directory_path
+from common.fields.image import ProcessedImageField
 from system.models import UserInfo
 
 
 class Book(DbAuditModel):
     class CategoryChoices(models.IntegerChoices):
-        DIRECTORY = 0, _("小说")
-        MENU = 1, _("文学")
-        PERMISSION = 2, _("哲学")
+        DIRECTORY = 0, "小说"
+        MENU = 1, "文学"
+        PERMISSION = 2, "哲学"
 
-    # covers = models.ManyToManyField(to=UploadFile,verbose_name="封面")
+    # choices 单选
+    category = models.SmallIntegerField(choices=CategoryChoices, default=CategoryChoices.DIRECTORY,
+                                        verbose_name="书籍类型")
+
+    # ForeignKey  一对多关系
     admin = models.ForeignKey(to=UserInfo, verbose_name="管理员", on_delete=models.CASCADE)
-    # avatar = ProcessedImageField(verbose_name="用户头像", null=True, blank=True,
-    #                              upload_to=upload_directory_path,
-    #                              processors=[ResizeToFill(512, 512)],  # 默认存储像素大小
-    #                              scales=[1, 2, 3, 4],  # 缩略图可缩小倍数，
-    #                              format='png')
-    cover = models.ImageField(verbose_name="书籍封面", null=True, blank=True)
+
+    # ManyToManyField 多对多关系
+    managers = models.ManyToManyField(to=UserInfo, verbose_name="操作人员", blank=True, null=True, related_name="book_managers")
+
+    # 图片上传，原图访问
+    cover = models.ImageField(verbose_name="书籍封面原图", null=True, blank=True)
+
+    # 图片上传，压缩访问， 比如库里面存的图片是 xxx/xxx/123.png ， 压缩访问路径可以为 xxx/xxx/123_1.jpg
+    # 定义了 scales=[1, 2, 3, 4] ，因此有四个压缩链接文件名  123_1.jpg 123_2.jpg 123_3.jpg 123_4.jpg
+    # 原图文件名 123.png
+    avatar = ProcessedImageField(verbose_name="书籍封面缩略图", null=True, blank=True,
+                                 upload_to=upload_directory_path,
+                                 processors=[ResizeToFill(512, 512)],  # 默认存储像素大小
+                                 scales=[1, 2, 3, 4],  # 缩略图可缩小倍数，
+                                 format='png')
+
+    # 文件上传
     book_file = models.FileField(verbose_name="书籍存储", upload_to=upload_directory_path, null=True, blank=True)
+
+    # 普通字段
     name = models.CharField(verbose_name="书籍名称", max_length=100, help_text="书籍名称啊，随便填")
     isbn = models.CharField(verbose_name="标准书号", max_length=20)
     author = models.CharField(verbose_name="书籍作者", max_length=20, help_text="坐着大啊啊士大夫")
@@ -50,8 +68,7 @@ class Book(DbAuditModel):
     publication_date = models.DateTimeField(verbose_name="出版日期", default=timezone.now)
     price = models.FloatField(verbose_name="书籍售价", default=999.99)
     is_active = models.BooleanField(verbose_name="是否启用", default=False)
-    category = models.SmallIntegerField(choices=CategoryChoices, default=CategoryChoices.DIRECTORY,
-                                        verbose_name="书籍类型")
+
 
     class Meta:
         verbose_name = '书籍名称'
@@ -69,29 +86,62 @@ class Book(DbAuditModel):
 ```shell
 # 文件位置 demo/utils/serializer.py
 
-from common.core.fields import LabeledChoiceField, BasePrimaryKeyRelatedField
+from common.core.fields import BasePrimaryKeyRelatedField
 from common.core.serializers import BaseModelSerializer
 from demo import models
+from system.models import UserInfo
 
 
 class BookSerializer(BaseModelSerializer):
     class Meta:
         model = models.Book
-        ## pk 字段用于前端删除，更新等标识，如果有删除更新等，必须得加上pk 字段
-        fields = ['pk', 'name', 'isbn', 'category', 'is_active', 'author', 'publisher', 'publication_date', 'price',
-                  'created_time', 'admin', 'cover', 'book_file', 'updated_time']
-        ## 用于前端table字段展示
-        table_fields = ['pk', 'cover', 'category', 'name', 'is_active', 'isbn', 'author', 'publisher',
-                        'publication_date', 'price', 'book_file']
-        read_only_fields = ['pk']
+        ## pk 字段用于前端删除，更新等标识，如果有删除更新等，必须得加上 pk 字段
+        ## 数据返回的字段，该字段受字段权限控制
+        fields = [
+            'pk', 'name', 'isbn', 'category', 'is_active', 'author', 'publisher', 'publication_date', 'price',
+            'created_time', 'admin', 'cover', 'book_file', 'updated_time', 'managers', 'avatar'
+        ]
+        ## 仅用于前端table表格字段有顺序的展示，如果没定义，默认使用 fields 定义的变量
+        ## 为啥要有这个变量？ 一般情况下，前端table表格宽度不够，不需要显示太多字段，就可以通过这个变量来控制显示的字段
+        table_fields = [
+            'pk', 'cover', 'category', 'name', 'is_active', 'isbn', 'author', 'publisher', 'publication_date', 'price',
+            'book_file'
+        ]
+
         # fields_unexport = ['pk']  # 导入导出文件时，忽略该字段
 
-    category = LabeledChoiceField(choices=models.Book.CategoryChoices.choices,
-                                  default=models.Book.CategoryChoices.DIRECTORY, label='书籍类型')
-    admin = BasePrimaryKeyRelatedField(attrs=['pk', 'username'], label="管理员", queryset=models.UserInfo.objects,
-                                       required=True, format="{username}({pk})")
-    # covers = BasePrimaryKeyRelatedField(attrs=['pk', 'filename'],format="{filename}({pk})", label="书籍封面", queryset=models.UploadFile.objects,
-    #                                    required=True,  many=True)
+        # read_only_fields = ['pk']  # 表示pk字段只读, 和 extra_kwargs 定义的 pk 含义一样
+
+        ## 构建字段的额外参数
+        extra_kwargs = {
+            'pk': {'read_only': True},  # 表示pk字段只读
+            'admin': {
+                'attrs': ['pk', 'username'], 'required': True, 'format': "{username}({pk})", 'input_type':'api-search-user'
+            },
+            'managers': {
+                'attrs': ['pk', 'username'], 'required': True, 'format': "{username}({pk})", 'input_type':'api-search-user'
+            }
+        }
+
+    # # 该方法定义了管理字段，和 extra_kwargs 定义的 admin 含义一样，该字段会被序列化为
+    # # { "pk": 2, "username": "admin", "label": "admin(2)" }
+    # # attrs 变量，表示展示的字段，有 pk,username 字段
+    # # format 变量，表示label字段展示内容，里面的字段一定是属于 attrs 定义的字段，写错的话，可能会报错
+    # # queryset 变量， 表示数据查询对象集合，注意：search-columns 方法中，该字段会有个 choices 变量，并且包含所有queryset数据，
+    # #      如果数据量特别大的时候，一定要自定义 input_type， 否则会有问题
+    # # input_type 变量， 自定义，如果存在，前端解析定义的类型 api-search-user ，并且 search-columns 方法中，choices变量为 []
+    # #      如果数据量特别大的时候，推荐这种写法
+    # # 目前，可以注释了，在父类里面，已经定义了 serializer_related_field 字段， 建议写到 extra_kwargs 里面，使用系统会自动生成
+    # # 或者 按照下面方法自己定义。
+    # # 为啥推荐写到 extra_kwargs ？ 写到extra_kwargs里面，系统会自动传一些参数， 可以省略 queryset , label 等参数
+    # admin = BasePrimaryKeyRelatedField(attrs=['pk', 'username'], label="管理员", required=True,
+    #                                    format="{username}({pk})", queryset=UserInfo.objects,
+    #                                    input_type='api-search-user')
+
+
+    # # 目前，可以注释了，在父类里面，已经定义了 serializer_choice_field 字段， 系统会自动生成
+    # category = LabeledChoiceField(choices=models.Book.CategoryChoices.choices,
+    #                               default=models.Book.CategoryChoices.DIRECTORY)
 
 ```
 
@@ -100,19 +150,16 @@ class BookSerializer(BaseModelSerializer):
 ```shell
 # 文件位置 demo/views.py
 
-# Create your views here.
-
-import logging
-
 from django_filters import rest_framework as filters
 
 from common.core.filter import BaseFilterSet
 from common.core.modelset import BaseModelSet, ImportExportDataAction
 from common.core.pagination import DynamicPageNumber
+from common.utils import get_logger
 from demo.models import Book
 from demo.utils.serializer import BookSerializer
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class BookFilter(BaseFilterSet):
@@ -126,10 +173,8 @@ class BookFilter(BaseFilterSet):
                   'created_time']  # fields用于前端自动生成的搜索表单
 
 
-class BookViewSet(BaseModelSet, ImportExportDataAction):
-    """
-    书籍管理
-    """
+class BookView(BaseModelSet, ImportExportDataAction):
+    """书籍管理"""
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     ordering_fields = ['created_time']
