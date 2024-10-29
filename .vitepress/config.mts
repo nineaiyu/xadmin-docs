@@ -99,6 +99,10 @@ export default defineConfig({
                 text: '进阶开发',
                 items: [
                     {
+                        text: 'RBAC权限',
+                        link: '/advanced/permission'
+                    },
+                    {
                         text: '数据权限',
                         link: '/advanced/data-permission'
                     }, {
