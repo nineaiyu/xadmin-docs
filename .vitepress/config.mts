@@ -143,8 +143,7 @@ export default defineConfig({
         }
     },
     head: [
-        ["link", {rel: "stylesheet", href: "https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css"}],
-        ["script", {src: "https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js"}],
-
+        ["link", {rel: "stylesheet", href: "/static/fancybox.css"}],
+        ["script", {src: "/static/fancybox.umd.js"}],
     ]
 })
