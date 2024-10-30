@@ -100,7 +100,7 @@ SECRET_KEY = 'django-insecure-mlq6(#a^2vk!1=7=xhp#$i=o5d%namfs=+b26$m#sh_2rco7j^
 ```
 ```shell
 # mysql 数据库配置
-# create database xadmin default character set utf8 COLLATE utf8_general_ci;
+# create database xadmin default character set utf8mb4 COLLATE utf8mb4_bin;
 # grant all on xadmin.* to server@'127.0.0.1' identified by 'KGzKjZpWBp4R4RSa';
 DB_ENGINE = 'django.db.backends.mysql'
 DB_HOST = 'mariadb'
@@ -108,7 +108,7 @@ DB_PORT = 3306
 DB_USER = 'server'
 DB_DATABASE = 'xadmin'
 DB_PASSWORD = 'KGzKjZpWBp4R4RSa'
-DB_OPTIONS = {'init_command': 'SET sql_mode="STRICT_TRANS_TABLES"', 'charset': 'utf8mb4'}
+DB_OPTIONS = {'init_command': 'SET sql_mode="STRICT_TRANS_TABLES"', 'charset': 'utf8mb4', 'collation': 'utf8mb4_bin'}
 
 ## sqlite3 配置，和 mysql配置 二选一, 默认mysql数据库
 #DB_ENGINE = 'django.db.backends.sqlite3'
@@ -134,7 +134,7 @@ docker exec -it xadmin-mariadb sh -c 'mariadb-tzinfo-to-sql /usr/share/zoneinfo 
 
 ```shell
 # mysql 数据库配置
-# create database xadmin default character set utf8 COLLATE utf8_general_ci;
+# create database xadmin default character set utf8mb4 COLLATE utf8mb4_bin;
 # grant all on xadmin.* to server@'127.0.0.1' identified by 'KGzKjZpWBp4R4RSa';
 # DB_ENGINE = 'django.db.backends.mysql'
 # DB_HOST = 'mariadb'
@@ -142,7 +142,7 @@ docker exec -it xadmin-mariadb sh -c 'mariadb-tzinfo-to-sql /usr/share/zoneinfo 
 # DB_USER = 'server'
 # DB_DATABASE = 'xadmin'
 # DB_PASSWORD = 'KGzKjZpWBp4R4RSa'
-# DB_OPTIONS = {'init_command': 'SET sql_mode="STRICT_TRANS_TABLES"', 'charset': 'utf8mb4'}
+# DB_OPTIONS = {'init_command': 'SET sql_mode="STRICT_TRANS_TABLES"', 'charset': 'utf8mb4', 'collation': 'utf8mb4_bin'}
 
 ## sqlite3 配置，和 mysql配置 二选一, 默认sqlite数据库
 DB_ENGINE = 'django.db.backends.sqlite3'
