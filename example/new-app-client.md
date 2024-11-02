@@ -50,20 +50,14 @@ export { bookApi };
 
 ```tsx
 import { bookApi } from "./api";
-import { reactive } from "vue";
-import { hasAuth } from "@/router/utils";
+import {getCurrentInstance, reactive} from "vue";
+import {getDefaultAuths} from "@/router/utils";
 
 export function useDemoBook() {
+    // 权限判断，用于判断是否有该权限
     const api = reactive(bookApi);
-    // 权限判断，用于判断是否有该权限，下面权限定义要和菜单中的权限保持一致
     const auth = reactive({
-        list: hasAuth("list:demoBook"),
-        create: hasAuth("create:demoBook"),
-        delete: hasAuth("delete:demoBook"),
-        update: hasAuth("update:demoBook"),
-        export: hasAuth("export:demoBook"),
-        import: hasAuth("import:demoBook"),
-        batchDelete: hasAuth("batchDelete:demoBook")
+        ...getDefaultAuths(getCurrentInstance())
     });
 
     return {
@@ -71,6 +65,7 @@ export function useDemoBook() {
         auth
     };
 }
+
 ```
 
 ## 4.编写table页面```index.vue```
@@ -80,39 +75,39 @@ export function useDemoBook() {
   import {RePlusPage} from "@/components/RePlusPage";
   import {useDemoBook} from "./utils/hook";
 
+  defineOptions({
+    name: "DemoBook" // 必须定义，用于菜单自动匹配组件
+  });
   const {api, auth} = useDemoBook();
 </script>
 <template>
   <RePlusPage :api="api" :auth="auth" locale-name="demoBook"/>
 </template>
+
 ```
 
 # 合并写法-如果业务比较简单，可以把上面的2，3，4步代码合并为一个文件里面```index.vue```
 ```vue
 <script lang="ts" setup>
   import {RePlusPage} from "@/components/RePlusPage";
-import { reactive } from "vue";
-import { hasAuth } from "@/router/utils";
-
+  import {getDefaultAuths} from "@/router/utils";
+  import {getCurrentInstance, reactive} from "vue";
 import { BaseApi } from "@/api/base";
 
+  defineOptions({
+    name: "DemoBook" // 必须定义，用于菜单自动匹配组件
+  });
 const bookApi = new BaseApi("/api/demo/book");
-bookApi.update = bookApi.patch;
 
 // 权限判断，用于判断是否有该权限
 const auth = reactive({
-  list: hasAuth("list:demoBook"),
-  create: hasAuth("create:demoBook"),
-  delete: hasAuth("delete:demoBook"),
-  update: hasAuth("update:demoBook"),
-  export: hasAuth("export:demoBook"),
-  import: hasAuth("import:demoBook"),
-  batchDelete: hasAuth("batchDelete:demoBook")
+  ...getDefaultAuths(getCurrentInstance())
 });
 </script>
 <template>
   <RePlusPage :api="bookApi" :auth="auth" locale-name="demoBook"/>
 </template>
+
 ```
 
 ## 5.添加中英字段名称【可选操作，前端会自动获取后端的label】
@@ -203,19 +198,21 @@ interface PageColumnList extends TableColumns {
 
 interface ApiAuthProps {
     list?: string | boolean | null | BaseApi["list"];
-    import?: string | boolean | null | BaseApi["import"];
-    export?: string | boolean | null | BaseApi["export"];
+    importData?: string | boolean | null | BaseApi["importData"];
+    exportData?: string | boolean | null | BaseApi["exportData"];
     create?: string | boolean | null | BaseApi["create"];
-    delete?: string | boolean | null | BaseApi["delete"];
+    destroy?: string | boolean | null | BaseApi["destroy"];
     update?: string | boolean | null | BaseApi["update"];
+    retrieve?: string | boolean | null | BaseApi["retrieve"];
+    partialUpdate?: string | boolean | null | BaseApi["partialUpdate"];
     fields?: string | boolean | null | BaseApi["fields"];
-    batchDelete?: string | boolean | null | BaseApi["batchDelete"];
+    batchDestroy?: string | boolean | null | BaseApi["batchDestroy"];
 }
 
 interface RePlusPageProps {
-    api: BaseApi;
+    api: Partial<BaseApi>;
     title?: string;
-    auth: ApiAuthProps | any;
+    auth: Partial<ApiAuthProps>;
     /**
      * 是否有多选框， 一般为第一列
      */
