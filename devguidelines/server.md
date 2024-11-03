@@ -30,3 +30,11 @@
 ![img_2.png](vscode/img_2.png)
 
 # 2.远端开发，需要配置Redis，mariadb，python 环境
+
+不限平台
+
+# 3.本地开发，需要配置Redis，mariadb，python 环境
+
+前端不限平台
+
+后端支持mac, 有限支持Windows， Windows平台无法正常启动任务监控命令
