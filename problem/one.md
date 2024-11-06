@@ -45,3 +45,9 @@ mariadb-tzinfo-to-sql /usr/share/zoneinfo | mariadb -u root mysql
 
 ## 7.非默认的80，443端口，导致头像等图片文件资源无法使用
 - 参考文档 NGINX部署 ```#proxy_set_header X-Forwarded-Host $host:$server_port;  # 非默认的80，443端口，则需要打开该配置```
+
+## 8.菜单中，批量添加权限，后端视图找不到
+
+![img_4.png](img_4.png)
+
+- a.修改后端配置或代码之后，一定要重启后端的Django服务，然后刷新前端页面
