@@ -39,9 +39,20 @@
 
 ```ts
 import { BaseApi } from "@/api/base";
+import type {BaseResult} from "@/api/types";
 
-const bookApi = new BaseApi("/api/demo/book");
-bookApi.update = bookApi.patch;
+class BookApi extends BaseApi {
+    push = (pk: number | string) => {
+        return this.request<BaseResult>(
+            "post",
+            {},
+            {},
+            `${this.baseApi}/${pk}/push`
+        );
+    };
+}
+
+const bookApi = new BookApi("/api/demo/book");
 export { bookApi };
 
 ```
@@ -50,19 +61,64 @@ export { bookApi };
 
 ```tsx
 import { bookApi } from "./api";
-import {getCurrentInstance, reactive} from "vue";
+import {getCurrentInstance, reactive, type Ref, shallowRef} from "vue";
 import {getDefaultAuths} from "@/router/utils";
+import type {OperationProps} from "@/components/RePlusPage";
+import {useRenderIcon} from "@/components/ReIcon/src/hooks";
+import CircleClose from "@iconify-icons/ep/circle-close";
+import {handleOperation} from "@/components/RePlusPage";
+import {useI18n} from "vue-i18n";
 
-export function useDemoBook() {
+export function useDemoBook(tableRef: Ref) {
     // 权限判断，用于判断是否有该权限
     const api = reactive(bookApi);
     const auth = reactive({
-        ...getDefaultAuths(getCurrentInstance())
+        push: false,
+        ...getDefaultAuths(getCurrentInstance(), ["push"])
     });
+    const {t} = useI18n();
 
+    /**
+     * 添加一个推送书籍的自定义操作按钮，用于控制书籍推送
+     */
+    const operationButtonsProps = shallowRef<OperationProps>({
+        width: 300,
+        showNumber: 4,
+        buttons: [
+            {
+                text: t("demoBook.pushBook"),
+                code: "push",
+                confirm: {
+                    title: row => {
+                        return t("demoBook.confirmPushBook", {name: row.name});
+                    }
+                },
+                props: {
+                    type: "success",
+                    icon: useRenderIcon(CircleClose),
+                    link: true
+                },
+                onClick: ({row, loading}) => {
+                    loading.value = true;
+                    handleOperation({
+                        t,
+                        apiReq: api.push(row?.pk ?? row?.id),
+                        success() {
+                            tableRef.value.handleGetData();
+                        },
+                        requestEnd() {
+                            loading.value = false;
+                        }
+                    });
+                },
+                show: auth.push && 6
+            }
+        ]
+    });
     return {
         api,
-        auth
+        auth,
+        operationButtonsProps
     };
 }
 
@@ -74,38 +130,22 @@ export function useDemoBook() {
 <script lang="ts" setup>
   import {RePlusPage} from "@/components/RePlusPage";
   import {useDemoBook} from "./utils/hook";
+  import {ref} from "vue";
 
   defineOptions({
     name: "DemoBook" // 必须定义，用于菜单自动匹配组件
   });
-  const {api, auth} = useDemoBook();
+  const tableRef = ref();
+  const {api, auth, operationButtonsProps} = useDemoBook(tableRef);
 </script>
 <template>
-  <RePlusPage :api="api" :auth="auth" locale-name="demoBook"/>
-</template>
-
-```
-
-# 合并写法-如果业务比较简单，可以把上面的2，3，4步代码合并为一个文件里面```index.vue```
-```vue
-<script lang="ts" setup>
-  import {RePlusPage} from "@/components/RePlusPage";
-  import {getDefaultAuths} from "@/router/utils";
-  import {getCurrentInstance, reactive} from "vue";
-import { BaseApi } from "@/api/base";
-
-  defineOptions({
-    name: "DemoBook" // 必须定义，用于菜单自动匹配组件
-  });
-const bookApi = new BaseApi("/api/demo/book");
-
-// 权限判断，用于判断是否有该权限
-const auth = reactive({
-  ...getDefaultAuths(getCurrentInstance())
-});
-</script>
-<template>
-  <RePlusPage :api="bookApi" :auth="auth" locale-name="demoBook"/>
+  <RePlusPage
+      ref="tableRef"
+      :api="api"
+      :auth="auth"
+      locale-name="demoBook"
+      :operationButtonsProps="operationButtonsProps"
+  />
 </template>
 
 ```
@@ -124,6 +164,8 @@ demoBook:
   publication_date: 出版日期
   price: 售价
   is_active: 是否启用
+  pushBook: 推送书籍
+  confirmPushBook: 确定将该书籍 {name} 推送到推荐服务？
 ```
 
 ```locales/en.yaml```
@@ -138,180 +180,6 @@ demoBook:
   publication_date: Publication date
   price: Price
   is_active: Active
-```
-
-## RePlusPage
-
-### 使用了自封装的RePlusPage组件```src/components/RePlusPage/src/utils/types.ts```，参数如下
-
-```ts
-import type {
-    PlusColumn,
-    PlusDescriptionsProps,
-    PlusSearchProps,
-    RecordType
-} from "plus-pro-components";
-import type {
-    PaginationProps,
-    PureTableProps,
-    TableColumnRenderer,
-    TableColumns
-} from "@pureadmin/table";
-import type {BaseApi} from "@/api/base";
-import type {formDialogOptions} from "./handle";
-import type {OperationProps} from "@/components/RePlusPage";
-import type {PureTableBarProps} from "@/components/RePureTableBar";
-import type {VNode} from "vue";
-import type {Mutable} from "@vueuse/core";
-import type {SearchColumnsResult, SearchFieldsResult} from "@/api/types";
-
-interface TableColumn {
-    /** 是否隐藏 */
-    hide?: boolean | CallableFunction;
-    /** 自定义列的内容插槽 */
-    slot?: string;
-    /** 自定义表头的内容插槽 */
-    headerSlot?: string;
-    /** 多级表头，内部实现原理：嵌套 `el-table-column` */
-    children?: Array<TableColumn>;
-    /** 自定义单元格渲染器（`jsx`语法） */
-    cellRenderer?: (data: TableColumnRenderer) => VNode | string;
-    /** 自定义头部渲染器（`jsx`语法） */
-    headerRenderer?: (data: TableColumnRenderer) => VNode | string;
-}
-
-interface PageColumn extends PlusColumn, TableColumn {
-    // columns: Partial<Mutable<TableColumn> & { _column: object }>[]
-    _column: Partial<
-        Mutable<SearchFieldsResult["data"][0]> &
-        Mutable<SearchColumnsResult["data"][0]>
-    >;
-}
-
-interface PageColumnList extends TableColumns {
-    prop?: string;
-    _column: Partial<
-        Mutable<SearchFieldsResult["data"][0]> &
-        Mutable<SearchColumnsResult["data"][0]>
-    >;
-}
-
-interface ApiAuthProps {
-    list?: string | boolean | null | BaseApi["list"];
-    importData?: string | boolean | null | BaseApi["importData"];
-    exportData?: string | boolean | null | BaseApi["exportData"];
-    create?: string | boolean | null | BaseApi["create"];
-    destroy?: string | boolean | null | BaseApi["destroy"];
-    update?: string | boolean | null | BaseApi["update"];
-    retrieve?: string | boolean | null | BaseApi["retrieve"];
-    partialUpdate?: string | boolean | null | BaseApi["partialUpdate"];
-    fields?: string | boolean | null | BaseApi["fields"];
-    batchDestroy?: string | boolean | null | BaseApi["batchDestroy"];
-}
-
-interface RePlusPageProps {
-    api: Partial<BaseApi>;
-    title?: string;
-    auth: Partial<ApiAuthProps>;
-    /**
-     * 是否有多选框， 一般为第一列
-     */
-    selection?: boolean;
-    /**
-     * 加载组件是否同时加载数据
-     */
-    immediate?: boolean;
-    /**
-     * 是否有 操作列， 一般为最后一列
-     */
-    operation?: boolean;
-    /**
-     * 是否是 树 表格
-     */
-    isTree?: boolean;
-    /**
-     * 是否有 工具栏
-     */
-    tableBar?: boolean;
-    /**
-     * 国际化，对应 locales 中
-     */
-    localeName?: string;
-    /**
-     * PlusSearchProps， 参考文档：https://plus-pro-components.com/components/search.html#search-attributes
-     */
-    plusSearchProps?: Partial<PlusSearchProps>;
-    /**
-     * pureTableProps， 参考源码：https://github.com/pure-admin/pure-admin-table
-     */
-    pureTableProps?: Partial<PureTableProps>;
-    /**
-     * pureTableBarProps
-     */
-    pureTableBarProps?: Partial<PureTableBarProps>;
-    /**
-     * plusDescriptionsProps， 参考文档：https://plus-pro-components.com/components/descriptions.html
-     */
-    plusDescriptionsProps?: Partial<PlusDescriptionsProps>;
-    /**
-     * 对通过 request 获取的数据进行处理
-     * @param data
-     */
-    searchResultFormat?: <T = RecordType[]>(data: T[]) => T[];
-    /**
-     * pure table 的 columns, 并返回
-     * @param columns
-     */
-    listColumnsFormat?: (columns: PageColumnList[]) => PageColumnList[];
-    /**
-     * plus pro descriptions 的 columns, 并返回
-     * @param columns
-     */
-    detailColumnsFormat?: (columns: PageColumn[]) => PageColumn[];
-    /**
-     * plus pro search 的 columns, 并返回
-     * @param columns
-     */
-    searchColumnsFormat?: (columns: PageColumn[]) => PageColumn[];
-    baseColumnsFormat?: ({
-                             listColumns,
-                             detailColumns,
-                             searchColumns,
-                             addOrEditRules,
-                             addOrEditColumns,
-                             searchDefaultValue,
-                             addOrEditDefaultValue
-                         }) => void;
-    /**
-     * 搜索之前进行一些修改
-     * @param params
-     */
-    beforeSearchSubmit?: <T = RecordType>(params: T) => T;
-    /**
-     * 分页组件
-     */
-    pagination?: Partial<PaginationProps>;
-    /**
-     * 默认的添加，更新 方法
-     */
-    addOrEditOptions?: {
-        title?: "";
-        props?: Partial<formDialogOptions>;
-        form?: undefined;
-        apiReq?: (
-            formOptions: Partial<formDialogOptions> & { formData: RecordType }
-        ) => BaseApi | any;
-    };
-    /**
-     * 操作栏 按钮组方法
-     */
-    operationButtonsProps?: Partial<OperationProps>;
-    /**
-     * 工具栏 按钮组方法
-     */
-    tableBarButtonsProps?: Partial<OperationProps>;
-}
-
-export type {ApiAuthProps, RePlusPageProps, PageColumn, PageColumnList};
-
+  pushBook: Push book
+  confirmPushBook: Are you sure to push {name} book?
 ```
