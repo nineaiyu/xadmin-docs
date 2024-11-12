@@ -104,7 +104,7 @@ python manage.py load_init_json
 python manage.py start all -d  # -d 参数是后台运行，如果去掉，则前台运行
 ```
 
-### B.手动执行命令
+### B.手动执行命令【下面命令一般是开发阶段操作】
 
 #### 1.api服务
 
