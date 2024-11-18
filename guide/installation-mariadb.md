@@ -1,6 +1,5 @@
 # MariaDB本地安装部署(可选)
 ---
-# ⚠️本地开发为了简便，使用的是默认sqlite3数据库，如果是线上服务，建议更换数据库
 
 ### 可支持的数据库具体参考官方文档：https://docs.djangoproject.com/zh-hans/5.0/ref/databases/
 
@@ -152,7 +151,7 @@ mysql_install_db --user=mysql
 ## 2.启动mariadb服务
 ```shell
 systemctl restart mariadb
-echo -e '\n127.0.0.1 mariadb' >> /etc/hosts   # 用于添加mysql本地解析
+echo -e '\n127.0.0.1 mysql' >> /etc/hosts   # 用于添加mysql本地解析
 ```
 
 ## 2.1 本项目使用了数据库时区转换，需要配置时区 [官方文档](https://mariadb.com/kb/en/mariadb-tzinfo-to-sql/)
@@ -171,21 +170,19 @@ grant all on xadmin.* to server@'127.0.0.1' identified by 'KGzKjZpWBp4R4RSa';
 ```
 
 ## 3.修改服务端配置，使用MySQL数据库
-### 修改```config.py```
+
+### 修改```config.yml```
 ```shell
 # mysql 数据库配置
 # create database xadmin default character set utf8mb4 COLLATE utf8mb4_bin;
 # grant all on xadmin.* to server@'127.0.0.1' identified by 'KGzKjZpWBp4R4RSa';
-DB_ENGINE = 'django.db.backends.mysql'
-DB_HOST = 'mariadb'
-DB_PORT = 3306
-DB_USER = 'server'
-DB_DATABASE = 'xadmin'
-DB_PASSWORD = 'KGzKjZpWBp4R4RSa'
-DB_OPTIONS = {'init_command': 'SET sql_mode="STRICT_TRANS_TABLES"', 'charset': 'utf8mb4', 'collation': 'utf8mb4_bin'}
 
-## sqlite3 配置，和 mysql配置 二选一, 默认sqlite数据库
-#DB_ENGINE = 'django.db.backends.sqlite3'
+DB_ENGINE: mysql
+DB_HOST: mysql
+DB_PORT: 3306
+DB_USER: server
+DB_DATABASE: xadmin
+DB_PASSWORD: KGzKjZpWBp4R4RSa
 ```
 
 ## 4.本地部署直接重启生效

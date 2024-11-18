@@ -1,18 +1,38 @@
 # 后端操作
 
+## 0.创建并修改 server 配置文件
+
+```shell
+cp config_example.yml config.yml
+```
+
+- a.将config.yml里面的 DB_PASSWORD ， REDIS_PASSWORD 取消注释
+- b.生成，并填写 SECRET_KEY， 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
+
+```shell
+cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49;echo
+```
+
+将上面的命令生成的字符串填写到config.yml里面的 ```SECRET_KEY``` 配置项
+
+```shell
+# 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
+# $ cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49;echo
+SECRET_KEY: django-insecure-mlq6(#a^2vk!1=7=xhp#$i=o5d%namfs=+b26$m#sh_2rco7j^
+```
+
 ## 1.创建 django app
 
 ```shell
 python3 manage.py startapp demo
 ```
 
-## 2.在 ```config.py``` 里面添加我们的app
+## 2.在 ```config.yml``` 里面添加我们的app
 
 ```shell
-# 需要将创建的应用写到里面 # 文件位置 config.py ,否则菜单中，找不到模型关联
-XADMIN_APPS = [
-    'demo.apps.DemoConfig',
-]
+# 需要将创建的应用写到里面 # 文件位置 config.yml ,否则菜单中，找不到模型关联
+XADMIN_APPS:
+  - 'demo.apps.DemoConfig'
 ```
 
 ## 3.编写models
@@ -237,10 +257,10 @@ urlpatterns = [
 urlpatterns += router.urls
 ```
 
-## 7.新建```config.py```文件，添加相关配置
+## 7.新建```config.yml```文件，添加相关配置
 
 ```shell
-# 文件位置 demo/config.py
+# 文件位置 demo/config.yml
 from django.urls import path, include
 
 # 路由配置，当添加APP完成时候，会自动注入路由到总服务

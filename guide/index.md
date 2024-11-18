@@ -15,6 +15,15 @@ xadmin 是基于 Django5 + vue3 + element-plus ，目标是快速开发,高效�
 ![GitHub stars](https://img.shields.io/github/stars/nineaiyu/xadmin-server?color=fa6470&style=flat)
 ![GitHub forks](https://img.shields.io/github/forks/nineaiyu/xadmin-server?style=flat)
 
+## 组件项目
+
+| Project                                                          | Status                                                                                                                                                                        | Description |
+|------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
+| [xadmin-client](https://github.com/nineaiyu/xadmin-client)       | <a href="https://github.com/nineaiyu/xadmin-client/releases"><img alt="Client release" src="https://img.shields.io/github/release/nineaiyu/xadmin-client.svg" /></a>          | 前端          |
+| [xadmin-server](https://github.com/nineaiyu/xadmin-server)       | <a href="https://github.com/nineaiyu/xadmin-server/releases"><img alt="Server release" src="https://img.shields.io/github/release/nineaiyu/xadmin-server.svg" /></a>          | 后端          |
+| [xadmin-web](https://github.com/nineaiyu/xadmin-web)             | <a href="https://github.com/nineaiyu/xadmin-web/releases"><img alt="Web release" src="https://img.shields.io/github/release/nineaiyu/xadmin-web.svg" /></a>                   | NGINX       |
+| [xadmin-installer](https://github.com/nineaiyu/xadmin-installer) | <a href="https://github.com/nineaiyu/xadmin-installer/releases"><img alt="Installer release" src="https://img.shields.io/github/release/nineaiyu/xadmin-installer.svg" /></a> | 容器化安装       |
+
 ## 在线体验
 
 演示地址： https://xadmin.dvcloud.xin

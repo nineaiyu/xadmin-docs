@@ -10,7 +10,7 @@ xadmin-server 是基于Python环境开发，建议使用 ```Python3.12``` 进行
 python >=3.12
 nodejs >=20
 redis >=6
-mariadb > 10.5 或 mysql > 8.0
+mariadb > 10.5 或 mysql > 8.0 | postgresql 16
 ```
 
 ## 支持的数据库
@@ -81,76 +81,30 @@ cd /data/xadmin/xadmin-server/
 docker compose build
 ```
 
-## 3.A启动api服务（使用mariadb作为数据库） （3.A和3.B任选一个进行操作）
+## 3.1 修改 server 配置文件
 
-### 修改```config.py```
+```shell
+cp config_example.yml config.yml
+```
 
-## SECRET_KEY: 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
-
+- a.将config.yml里面的 DB_PASSWORD ， REDIS_PASSWORD 取消注释
+- b.生成，并填写 SECRET_KEY， 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
 ```shell
 cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49;echo
 ```
 
-将上面的命令生成的字符串填写到 ```SECRET_KEY``` 里面
-
+将上面的命令生成的字符串填写到config.yml里面的 ```SECRET_KEY``` 配置项
 ```shell
 # 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
 # $ cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49;echo
-SECRET_KEY = 'django-insecure-mlq6(#a^2vk!1=7=xhp#$i=o5d%namfs=+b26$m#sh_2rco7j^'
-```
-```shell
-# mysql 数据库配置
-# create database xadmin default character set utf8mb4 COLLATE utf8mb4_bin;
-# grant all on xadmin.* to server@'127.0.0.1' identified by 'KGzKjZpWBp4R4RSa';
-DB_ENGINE = 'django.db.backends.mysql'
-DB_HOST = 'mariadb'
-DB_PORT = 3306
-DB_USER = 'server'
-DB_DATABASE = 'xadmin'
-DB_PASSWORD = 'KGzKjZpWBp4R4RSa'
-DB_OPTIONS = {'init_command': 'SET sql_mode="STRICT_TRANS_TABLES"', 'charset': 'utf8mb4', 'collation': 'utf8mb4_bin'}
-
-## sqlite3 配置，和 mysql配置 二选一, 默认mysql数据库
-#DB_ENGINE = 'django.db.backends.sqlite3'
+SECRET_KEY: django-insecure-mlq6(#a^2vk!1=7=xhp#$i=o5d%namfs=+b26$m#sh_2rco7j^
 ```
 
+## 3.2 启动api服务
+
 ```shell
-mkdir -pv /data/xadmin/xadmin-mariadb/{data,logs}
-chown 1001.1001 -R /data/xadmin/xadmin-mariadb/{data,logs}
-chown 1001.1001 -R /data/xadmin/xadmin-server/* # 为了安全考虑，容器使用非root用户启动服务
 cd /data/xadmin/xadmin-server/
 docker compose up -d  # -d 参数是后台运行，如果去掉，则前台运行
-```
-
-添加mysql时区支持
-
-```shell
-docker exec -it xadmin-mariadb sh -c 'mariadb-tzinfo-to-sql /usr/share/zoneinfo | mariadb -u root mysql'
-```
-
-## 3.B启动api服务（使用sqlite作为数据库，不推荐）
-
-### 修改```config.py```
-
-```shell
-# mysql 数据库配置
-# create database xadmin default character set utf8mb4 COLLATE utf8mb4_bin;
-# grant all on xadmin.* to server@'127.0.0.1' identified by 'KGzKjZpWBp4R4RSa';
-# DB_ENGINE = 'django.db.backends.mysql'
-# DB_HOST = 'mariadb'
-# DB_PORT = 3306
-# DB_USER = 'server'
-# DB_DATABASE = 'xadmin'
-# DB_PASSWORD = 'KGzKjZpWBp4R4RSa'
-# DB_OPTIONS = {'init_command': 'SET sql_mode="STRICT_TRANS_TABLES"', 'charset': 'utf8mb4', 'collation': 'utf8mb4_bin'}
-
-## sqlite3 配置，和 mysql配置 二选一, 默认sqlite数据库
-DB_ENGINE = 'django.db.backends.sqlite3'
-```
-
-```shell
-cd /data/xadmin/xadmin-server/
-docker compose -f docker-compose-sqlite.yml up -d  # -d 参数是后台运行，如果去掉，则前台运行
 ```
 
 ## 4.创建管理员用户，导入默认菜单，权限，角色等数据（仅新部署执行一次）
@@ -180,6 +134,7 @@ git clone https://github.com/nineaiyu/xadmin-client.git
 
 ## 6.修改为自己服务器的域名信息，```/data/xadmin/xadmin-client/.env.production```
 
+如果前端和后端域名是同一个，则下面可以不进行配置
 ```shell
 # api接口地址
 VITE_API_DOMAIN="https://xadmin.dvcloud.xin"

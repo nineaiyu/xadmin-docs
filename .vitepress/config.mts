@@ -44,13 +44,14 @@ export default defineConfig({
                 text: '安装部署',
                 items: [
                     {
+                        text: '一键部署',
+                        link: '/guide/demo'
+                    },
+                    {
                         text: '本地部署',
                         link: '/guide/installation-local'
                     }, {
-                        text: '容器化部署-脚本',
-                        link: '/guide/installation-docker-shell'
-                    }, {
-                        text: '容器化部署-详细',
+                        text: '容器化部署',
                         link: '/guide/installation-docker'
                     }, {
                         text: 'NGINX部署',

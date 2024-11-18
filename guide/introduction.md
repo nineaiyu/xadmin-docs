@@ -5,7 +5,7 @@
 ```shell
 ├── captcha                     #图片验证码应用
 ├── common                      # 项目工具类库，包含各种封装方法
-├── config.py                   # 运行配置文件，包含数据库，Redis等配置信息
+├── config.yml                   # 运行配置文件，包含数据库，Redis等配置信息
 ├── docker-compose-sqlite.yml
 ├── docker-compose.yml          # docker compose 运行文件
 ├── Dockerfile                  # 用与构建容器镜像文件
@@ -24,7 +24,7 @@
 
 ```
 
-## 项目配置文件```config.py```
+## 项目配置文件```config.yml```
 
 ```shell
 

@@ -10,7 +10,7 @@ xadmin-server 是基于Python环境开发，建议使用 ```Python3.12``` 进行
 python >=3.12
 nodejs >=20
 redis >=6
-mariadb > 10.5 或 mysql > 8.0
+mariadb > 10.5 或 mysql > 8.0 | postgresql 16
 ```
 
 ## 支持的数据库
@@ -31,12 +31,38 @@ mariadb > 10.5 或 mysql > 8.0
 dnf install python3.12 python3.12-devel -y
 ```
 
-## 2.安装MySQL-client依赖环境
+## 2.1安装postgresql依赖环境  [mysql和postgresql 二选一，默认postgresql]
+```shell
+dnf module switch-to postgresql:16
+dnf install postgresql-server -y
+postgresql-setup --initdb
+systemctl enable postgresql
+echo -e '\n127.0.0.1 postgresql' >> /etc/hosts   # 用于添加postgresql本地解析
+```
+
+修改配置，支持md5密码认证 ```/var/lib/pgsql/data/pg_hba.conf```
 
 ```shell
-curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash
-dnf install MariaDB-devel -y
+# IPv4 local connections:
+host    all             all             127.0.0.1/32            md5
 ```
+
+重启服务
+
+```shell
+systemctl restart postgresql
+```
+
+创建数据库并添加授权
+
+```shell
+su postgres 
+psql -c "create database xadmin;"
+psql -c "CREATE USER server WITH PASSWORD 'KGzKjZpWBp4R4RSa';"
+psql -c "GRANT ALL PRIVILEGES ON DATABASE xadmin TO server;"
+```
+
+## 2.2 安装MySQL-client依赖环境，参考 mariadb 安装文档
 
 ## 3.安装启动Redis，并设置所需密码和hosts解析
 
@@ -44,6 +70,7 @@ dnf install MariaDB-devel -y
 dnf install redis -y
 echo -e '\nrequirepass nineven' >> /etc/redis/redis.conf   # 用于添加redis密码
 echo -e '\n127.0.0.1 redis' >> /etc/hosts   # 用于添加redis本地解析
+systemctl enable redis
 systemctl restart redis
 ```
 
@@ -70,6 +97,27 @@ source /data/xadmin/py312/bin/activate
 pip install --upgrade pip
 cd /data/xadmin/xadmin-server
 pip install -r requirements.txt
+```
+
+## 7.0 修改 server 配置文件
+
+```shell
+cp config_example.yml config.yml
+```
+
+- a.将config.yml里面的 DB_PASSWORD ， REDIS_PASSWORD 取消注释
+- b.生成，并填写 SECRET_KEY， 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
+
+```shell
+cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49;echo
+```
+
+将上面的命令生成的字符串填写到config.yml里面的 ```SECRET_KEY``` 配置项
+
+```shell
+# 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
+# $ cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49;echo
+SECRET_KEY: django-insecure-mlq6(#a^2vk!1=7=xhp#$i=o5d%namfs=+b26$m#sh_2rco7j^
 ```
 
 ## 7.1 生成数据表并迁移
@@ -148,6 +196,7 @@ npm install -g pnpm
 
 ## 13.修改为自己服务器的域名信息，```/data/xadmin/xadmin-client/.env.production```
 
+如果前端和后端域名是同一个，则下面可以不进行配置
 ```shell
 # api接口地址
 VITE_API_DOMAIN="https://xadmin.dvcloud.xin"
