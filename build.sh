@@ -1,20 +1,13 @@
 #!/bin/bash
 
-DOCKER_IMAGE_PREFIX="swr.cn-north-4.myhuaweicloud.com/nineaiyu"
+node_images="registry.cn-beijing.aliyuncs.com/nineaiyu/node:22.11.0-slim"
 
-images="xadmin-node:22.11.0-slim"
-for image in ${images};do
-  if ! docker images --format "{{.Repository}}:{{.Tag}}" |grep "^${image}" &>/dev/null;then
-    full_image_path="${DOCKER_IMAGE_PREFIX}/${image}"
-    docker pull  "${full_image_path}"
-    docker tag "${full_image_path}" "${image}"
-    docker rmi -f "${full_image_path}"
-  fi
-done
+npm_mirror="https://registry.npmmirror.com"
 
+cmd='corepack enable && corepack prepare pnpm@9.12.3 --activate \
+    && cd /app && pnpm install --frozen-lockfile && pnpm run docs:build'
 
-
-# build web
-docker compose up xadmin-docs-build
-# clean old build docker
-docker rm -f xadmin-docs-build
+docker run --rm -it -v ./:/app -e TZ=Asia/Shanghai \
+    -e COREPACK_NPM_REGISTRY=${npm_mirror} \
+    -e npm_config_registry=${npm_mirror} \
+    ${node_images} sh -c "${cmd}"
