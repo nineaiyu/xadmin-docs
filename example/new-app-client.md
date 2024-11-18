@@ -70,11 +70,12 @@ export { bookApi };
 
 ```tsx
 import { bookApi } from "./api";
-import {getCurrentInstance, reactive, type Ref, shallowRef} from "vue";
+import {getCurrentInstance, h, reactive, type Ref, shallowRef} from "vue";
 import {getDefaultAuths} from "@/router/utils";
 import type {
     OperationProps,
     PageColumn,
+    PageTableColumn,
     RePlusPageProps
 } from "@/components/RePlusPage";
 import {useRenderIcon} from "@/components/ReIcon/src/hooks";
@@ -83,6 +84,7 @@ import {handleOperation} from "@/components/RePlusPage";
 import {useI18n} from "vue-i18n";
 import Success from "@iconify-icons/ep/success-filled";
 import {message} from "@/utils/message";
+import {ElTag} from "element-plus";
 
 export function useDemoBook(tableRef: Ref) {
     // 权限判断，用于判断是否有该权限
@@ -233,11 +235,28 @@ export function useDemoBook(tableRef: Ref) {
         });
         return columns;
     };
+    /**
+     * 表格列操作
+     * @param columns
+     */
+    const listColumnsFormat = (columns: PageTableColumn[]) => {
+        columns.forEach(column => {
+            switch (column._column?.key) {
+                case "category":
+                    column["cellRenderer"] = ({row}) => {
+                        return h(ElTag, {type: "success"}, () => row.category.label);
+                    };
+                    break;
+            }
+        });
+        return columns;
+    };
 
     return {
         api,
         auth,
         addOrEditOptions,
+        listColumnsFormat,
         searchColumnsFormat,
         tableBarButtonsProps,
         operationButtonsProps
@@ -262,6 +281,7 @@ export function useDemoBook(tableRef: Ref) {
     api,
     auth,
     addOrEditOptions,
+    listColumnsFormat,
     searchColumnsFormat,
     tableBarButtonsProps,
     operationButtonsProps
@@ -275,6 +295,7 @@ export function useDemoBook(tableRef: Ref) {
       locale-name="demoBook"
       :search-columns-format="searchColumnsFormat"
       :add-or-edit-options="addOrEditOptions"
+      :list-columns-format="listColumnsFormat"
       :tableBarButtonsProps="tableBarButtonsProps"
       :operationButtonsProps="operationButtonsProps"
   />
