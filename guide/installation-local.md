@@ -8,7 +8,7 @@ xadmin-server 是基于Python环境开发，建议使用 ```Python3.12``` 进行
 
 ```
 python >=3.12
-nodejs >=20
+nodejs >=22
 redis >=6
 mariadb > 10.5 或 mysql > 8.0 | postgresql 16
 ```
@@ -33,7 +33,7 @@ dnf install python3.12 python3.12-devel -y
 
 ## 2.1安装postgresql依赖环境  [mysql和postgresql 二选一，默认postgresql]
 ```shell
-dnf module switch-to postgresql:16
+dnf module switch-to postgresql:16 -y
 dnf install postgresql-server -y
 postgresql-setup --initdb
 systemctl enable postgresql
@@ -43,8 +43,8 @@ echo -e '\n127.0.0.1 postgresql' >> /etc/hosts   # 用于添加postgresql本地�
 修改配置，支持md5密码认证 ```/var/lib/pgsql/data/pg_hba.conf```
 
 ```shell
-# IPv4 local connections:
-host    all             all             127.0.0.1/32            md5
+sed -i "/^host    all             all             127.0.0.1/d"  /var/lib/pgsql/data/pg_hba.conf
+echo "host    all             all             127.0.0.1/32            md5" >> /var/lib/pgsql/data/pg_hba.conf
 ```
 
 重启服务
@@ -56,10 +56,40 @@ systemctl restart postgresql
 创建数据库并添加授权
 
 ```shell
-su postgres 
-psql -c "create database xadmin;"
-psql -c "CREATE USER server WITH PASSWORD 'KGzKjZpWBp4R4RSa';"
-psql -c "GRANT ALL PRIVILEGES ON DATABASE xadmin TO server;"
+su - postgres
+```
+
+```shell
+cat <<EOF > create_and_permission.sql
+-- 创建数据库
+create database xadmin;
+
+-- 创建用户并设置密码
+CREATE USER server WITH PASSWORD 'KGzKjZpWBp4R4RSa';
+
+-- 授予用户对数据库的所有权限
+GRANT ALL PRIVILEGES ON DATABASE xadmin TO server;
+
+-- 切换到xadmin数据库
+\c xadmin;
+
+-- 授予用户对 schema 的使用和创建权限
+GRANT USAGE ON SCHEMA public TO server;
+GRANT CREATE ON SCHEMA public TO server;
+
+-- 授予用户对 schema 中现有对象（如表和序列）的权限
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO server;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO server;
+
+-- 配置默认权限，确保未来创建的表和序列也授予用户权限
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO server;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO server;
+EOF
+
+psql -f create_and_permission.sql
+
+exit
+
 ```
 
 ## 2.2 安装MySQL-client依赖环境，参考 mariadb 安装文档
@@ -67,6 +97,7 @@ psql -c "GRANT ALL PRIVILEGES ON DATABASE xadmin TO server;"
 ## 3.安装启动Redis，并设置所需密码和hosts解析
 
 ```shell
+dnf module switch-to redis:7 -y
 dnf install redis -y
 echo -e '\nrequirepass nineven' >> /etc/redis/redis.conf   # 用于添加redis密码
 echo -e '\n127.0.0.1 redis' >> /etc/hosts   # 用于添加redis本地解析
@@ -92,6 +123,13 @@ git clone https://github.com/nineaiyu/xadmin-server.git
 
 ## 6.安装依赖包
 
+### 安装mariadb依赖
+
+```shell
+curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash
+dnf install MariaDB-devel -y
+```
+
 ```shell
 source /data/xadmin/py312/bin/activate
 pip install --upgrade pip
@@ -106,18 +144,15 @@ cp config_example.yml config.yml
 ```
 
 - a.将config.yml里面的 DB_PASSWORD ， REDIS_PASSWORD 取消注释
-- b.生成，并填写 SECRET_KEY， 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
 
 ```shell
-cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49;echo
+sed -i "s@^#DB_PASSWORD:@DB_PASSWORD:@" config.yml
+sed -i "s@^#REDIS_PASSWORD:@REDIS_PASSWORD:@" config.yml
 ```
 
-将上面的命令生成的字符串填写到config.yml里面的 ```SECRET_KEY``` 配置项
-
+- b.生成，并填写 SECRET_KEY， 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
 ```shell
-# 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
-# $ cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49;echo
-SECRET_KEY: django-insecure-mlq6(#a^2vk!1=7=xhp#$i=o5d%namfs=+b26$m#sh_2rco7j^
+sed -i "s@^SECRET_KEY.*@SECRET_KEY: $(cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49)@" config.yml
 ```
 
 ## 7.1 生成数据表并迁移
@@ -187,27 +222,22 @@ git clone https://github.com/nineaiyu/xadmin-client.git
 ## 12. 通过官网安装22版本的node环境
 ```shell
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
-nvm install 22
+```
+
+```shell
 source ~/.bashrc
+nvm install 22
 node -v # layouts.download.codeBox.shouldPrint
 npm -v # layouts.download.codeBox.shouldPrint
 npm install -g pnpm
 ```
 
-## 13.修改为自己服务器的域名信息，```/data/xadmin/xadmin-client/.env.production```
-
-如果前端和后端域名是同一个，则下面可以不进行配置
-```shell
-# api接口地址
-VITE_API_DOMAIN="https://xadmin.dvcloud.xin"
-# ws 接口地址，由于建立socket需要token授权，则需要保证前端域名和ws域名一致
-VITE_WSS_DOMAIN="wss://xadmin.dvcloud.xin"
-```
-
-## 14.编译安装
+## 13.编译安装
 
 ```shell
 cd /data/xadmin/xadmin-client
 pnpm install --frozen-lockfile
 pnpm build
 ```
+
+## [14.部署NGINX,并访问](../guide/installation-nginx)

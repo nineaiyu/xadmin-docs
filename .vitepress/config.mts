@@ -48,11 +48,12 @@ export default defineConfig({
                         link: '/guide/demo'
                     },
                     {
-                        text: '本地部署',
-                        link: '/guide/installation-local'
-                    }, {
                         text: '容器化部署',
                         link: '/guide/installation-docker'
+                    },
+                    {
+                        text: '本地部署',
+                        link: '/guide/installation-local'
                     }, {
                         text: 'NGINX部署',
                         link: '/guide/installation-nginx'

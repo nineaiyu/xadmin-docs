@@ -8,7 +8,7 @@ xadmin-server 是基于Python环境开发，建议使用 ```Python3.12``` 进行
 
 ```
 python >=3.12
-nodejs >=20
+nodejs >=22
 redis >=6
 mariadb > 10.5 或 mysql > 8.0 | postgresql 16
 ```
@@ -48,7 +48,7 @@ sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/dock
 ```
 
 ```shell
-sudo yum install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo yum install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
 ##### 【可选】如果官方源，上面命令安装比较慢，可以使用下面命令，切换为清华源，然后再执行上面安装命令
@@ -88,16 +88,15 @@ cp config_example.yml config.yml
 ```
 
 - a.将config.yml里面的 DB_PASSWORD ， REDIS_PASSWORD 取消注释
-- b.生成，并填写 SECRET_KEY， 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
+
 ```shell
-cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49;echo
+sed -i "s@^#DB_PASSWORD:@DB_PASSWORD:@" config.yml
+sed -i "s@^#REDIS_PASSWORD:@REDIS_PASSWORD:@" config.yml
 ```
 
-将上面的命令生成的字符串填写到config.yml里面的 ```SECRET_KEY``` 配置项
+- b.生成，并填写 SECRET_KEY， 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
 ```shell
-# 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
-# $ cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49;echo
-SECRET_KEY: django-insecure-mlq6(#a^2vk!1=7=xhp#$i=o5d%namfs=+b26$m#sh_2rco7j^
+sed -i "s@^SECRET_KEY.*@SECRET_KEY: $(cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49)@" config.yml
 ```
 
 ## 3.2 启动api服务
@@ -132,19 +131,11 @@ cd /data/xadmin/
 git clone https://github.com/nineaiyu/xadmin-client.git
 ```
 
-## 6.修改为自己服务器的域名信息，```/data/xadmin/xadmin-client/.env.production```
-
-如果前端和后端域名是同一个，则下面可以不进行配置
-```shell
-# api接口地址
-VITE_API_DOMAIN="https://xadmin.dvcloud.xin"
-# ws 接口地址，由于建立socket需要token授权，则需要保证前端域名和ws域名一致
-VITE_WSS_DOMAIN="wss://xadmin.dvcloud.xin"
-```
-
-## 7.通过脚本进行容器化构建
+## 6.通过脚本进行容器化构建
 
 ```shell
 cd /data/xadmin/xadmin-client
 sh build.sh
 ```
+
+## [7.部署NGINX,并访问](../guide/installation-nginx)

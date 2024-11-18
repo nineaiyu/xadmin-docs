@@ -112,3 +112,5 @@ server {
 ```shell
 nginx -t && systemctl restart nginx
 ```
+
+## 4.在浏览器数据本地地址，进行访问
