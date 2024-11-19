@@ -61,7 +61,7 @@ server {
 
     # 资源服务直接通过nginx访问，减少服务端压力
     location ^~ /media/ {
-        alias /data/xadmin/xadmin-server/upload/;
+        alias /data/xadmin/xadmin-server/data/upload/;
         try_files $uri $uri/ @media;
     }
 
