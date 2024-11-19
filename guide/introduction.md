@@ -24,59 +24,72 @@
 
 ```
 
-## 项目配置文件```config.yml```
+## 项目配置模板文件```config_example.yml```
 
 ```shell
-
-# debug为false的时候，如果遇到静态文件无法访问，比如api文档无法正常打开，需要通过下面命令收集静态文件
-# python manage.py collectstatic
-
-DEBUG = False
-
-ALLOWED_HOSTS = ["*"]
-
 # SECURITY WARNING: keep the secret key used in production secret!
 # 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
 # $ cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49;echo
-SECRET_KEY = 'django-insecure-mlq6(#a^2vk!1=7=xhp#$i=o5d%namfs=+b26$m#sh_2rco7j^'
+SECRET_KEY:
 
-### 更多数据库配置，参考官方文档：https://docs.djangoproject.com/zh-hans/5.0/ref/databases/
+# Development env open this, when error occur display the full process track, Production disable it
+# DEBUG 模式 开启DEBUG后遇到错误时可以看到更多日志，正式服要禁用
+# DEBUG: true
 
-# # mysql 数据库配置
-# # create database xadmin default character set utf8mb4 COLLATE utf8mb4_bin;
-# # grant all on xadmin.* to server@'127.0.0.1' identified by 'KGzKjZpWBp4R4RSa';
-DB_ENGINE = 'django.db.backends.mysql'
-DB_HOST = 'mariadb'
-DB_PORT = 3306
-DB_USER = 'server'
-DB_DATABASE = 'xadmin'
-DB_PASSWORD = 'KGzKjZpWBp4R4RSa'
-DB_OPTIONS = {'init_command': 'SET sql_mode="STRICT_TRANS_TABLES"', 'charset': 'utf8mb4', 'collation': 'utf8mb4_bin'}
+# DEBUG, INFO, WARNING, ERROR, CRITICAL can set. See https://docs.djangoproject.com/zh-hans/5.0/topics/logging/
+# 日志级别
+# LOG_LEVEL: DEBUG
+
+# 用于DEBUG模式下，输出sql日志
+# DEBUG_DEV = true
+
+# Database setting, Support sqlite3, mysql, postgres ....
+# 数据库设置
+# ### 更多数据库配置，参考官方文档：https://docs.djangoproject.com/zh-hans/5.0/ref/databases/
+# 创建竖数据库sql
+# create database xadmin default character set utf8mb4 COLLATE utf8mb4_bin;
+# grant all on xadmin.* to server@'127.0.0.1' identified by 'KGzKjZpWBp4R4RSa';
+
+# SQLite setting:
+# 使用单文件sqlite数据库
+# DB_ENGINE: sqlite3
+# DB_NAME:
+# MySQL or postgres setting like:
+# DB_ENGINE can set mysql, oracle, postgresql, sqlite3
+
+# 使用 Mariadb 作为数据库
+#DB_ENGINE: mysql
+#DB_HOST: mysql
+#DB_PORT: 3306
+
+# 使用 postgresql 作为数据库[默认数据库]
+DB_ENGINE: postgresql
+DB_HOST: postgresql
+DB_PORT: 5432
+
+DB_USER: server
+DB_DATABASE: xadmin
+#DB_PASSWORD: KGzKjZpWBp4R4RSa
 
 
-# sqlite3 配置，和 mysql配置 二选一, 默认sqlite数据库
-# DB_ENGINE = 'django.db.backends.sqlite3'
+# Use Redis as broker for celery and web socket
+# Redis配置
+REDIS_HOST: redis
+REDIS_PORT: 6379
+#REDIS_PASSWORD: nineven
+#DEFAULT_CACHE_ID: 1
+#CHANNEL_LAYERS_CACHE_ID: 2
+#CELERY_BROKER_CACHE_ID: 3
 
-# 缓存配置
-REDIS_HOST = "redis"
-REDIS_PORT = 6379
-REDIS_PASSWORD = "nineven"
+# When Django start it will bind this host and port
+# ./manage.py runserver 127.0.0.1:8896
+# 运行时绑定端口
+HTTP_BIND_HOST: 0.0.0.0
+HTTP_LISTEN_PORT: 8896
+GUNICORN_MAX_WORKER: 4
 
 # 需要将创建的应用写到里面
-XADMIN_APPS = []
-
-# 速率限制配置
-DEFAULT_THROTTLE_RATES = {}
-
-# redis key，建议开发的时候，配置到自己的app里面
-CACHE_KEY_TEMPLATE = {}
-
-# 定时任务
-CELERY_BEAT_SCHEDULE = {}
-
-# api服务监听端口，通过 python manage.py start all 命令启动时的监听端口
-HTTP_LISTEN_PORT = 8896
-GUNICORN_MAX_WORKER = 4 # API服务最多启动的worker数量
+XADMIN_APPS:
 ```
 
 ## client 整体目录结构
