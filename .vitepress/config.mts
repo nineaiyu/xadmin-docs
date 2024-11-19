@@ -146,6 +146,7 @@ export default defineConfig({
     },
     head: [
         ["link", {rel: "stylesheet", href: "/static/fancybox.css"}],
+        ["link", {rel: "stylesheet", href: "/static/styles.css"}],
         ["script", {src: "/static/fancybox.umd.js"}],
     ]
 })
