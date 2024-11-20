@@ -200,6 +200,23 @@ mysql
 ```shell
 grant all on xadmin.* to server@'192.168.196.%' identified by 'KGzKjZpWBp4R4RSa';
 ```
+
+### 修改 docker-compose.yml 文件，并增加配置如下
+
+```shell
+    depends_on:
+    #  - mysql
+```
+
+```shell
+    extra_hosts:
+      - "mysql:host-gateway"
+```
+
+将宿主机的IP 映射到 mysql
+
+并将 ```depends_on``` 里面，关于 mysql的依赖注释或者删掉
+
 ### 重启容器服务
 ```shell
 cd /data/xadmin/xadmin-server
