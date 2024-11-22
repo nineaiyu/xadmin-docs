@@ -21,18 +21,21 @@
 ## 4. 服务器国际化不生效
 - a. 执行命令 ```python manage.py compilemessages```
 
-## 5.项目使用mariadb数据库，访问首页 提示报错
+## 5.项目使用mariadb|mysql数据库，访问首页 提示报错
 
 ![img_1.png](img_1.png)
 ![img_2.png](img_2.png)
 
 - a. 这种一般是数据库未设置时区数据，可参考文档 [官方文档](https://mariadb.com/kb/en/mariadb-tzinfo-to-sql/)，或者进行
   mariadb 部署的服务器或者容器，执行下面命令
-
+##### 使用mariadb执行
 ```shell
 mariadb-tzinfo-to-sql /usr/share/zoneinfo | mariadb -u root mysql
 ```
-
+##### 使用mysql执行
+```shell
+mysql-tzinfo-to-sql /usr/share/zoneinfo | mysql -u root mysql
+```
 ## 6.Demo例子运行一切正常，但按这个例子自己做了一个新的，结果前端页面没有任何显示，但查看后台返回的3个API返回结果都正常
 
 - a. 这种一般是菜单定义的权限和前端代码里面的auth权限不一致导致的
