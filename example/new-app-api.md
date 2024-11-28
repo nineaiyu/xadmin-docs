@@ -102,7 +102,7 @@ class Book(DbAuditModel):
 
 ```
 
-## 4.编写序列化器
+## 4.编写序列化器【请务必仔细阅读】
 
 #### 在```demo```目录中，新创建一个```utils```目录，然后在```utils```目录中创建```serializer.py```文件
 
@@ -158,8 +158,9 @@ class BookSerializer(BaseModelSerializer):
         }
 
     # # 该方法定义了管理字段，和 extra_kwargs 定义的 admin 含义一样，该字段会被序列化为
+    # # 定义带有关联关系的字段，比如上面的admin，则额外参数中，input_type 和 attrs 至少存在一个，要不然前端可能会解析失败
     # # { "pk": 2, "username": "admin", "label": "admin(2)" }
-    # # attrs 变量，表示展示的字段，有 pk,username 字段
+    # # attrs 变量，表示展示的字段，有 pk,username 字段， 且 pk 字段是必须的， 比如 'attrs': ['pk']
     # # format 变量，表示label字段展示内容，里面的字段一定是属于 attrs 定义的字段，写错的话，可能会报错
     # # queryset 变量， 表示数据查询对象集合，注意：search-columns 方法中，该字段会有个 choices 变量，并且包含所有queryset数据，
     # #      如果数据量特别大的时候，一定要自定义 input_type， 否则会有问题
@@ -185,7 +186,6 @@ class BookSerializer(BaseModelSerializer):
 
     def get_block(self, obj):
         return obj.is_active
-
 
 ```
 
