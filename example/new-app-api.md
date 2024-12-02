@@ -257,10 +257,10 @@ urlpatterns = [
 urlpatterns += router.urls
 ```
 
-## 7.新建```config.yml```文件，添加相关配置
+## 7.新建```config.py```文件，添加相关配置
 
 ```shell
-# 文件位置 demo/config.yml
+# 文件位置 demo/config.py
 from django.urls import path, include
 
 # 路由配置，当添加APP完成时候，会自动注入路由到总服务
