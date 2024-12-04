@@ -22,6 +22,7 @@ export default defineConfig({
             {text: '演示平台', link: 'https://xadmin.dvcloud.xin/'},
             {text: '前端代码', link: 'https://github.com/nineaiyu/xadmin-client'},
             {text: '后端代码', link: 'https://github.com/nineaiyu/xadmin-server'},
+            {text: '捐赠', link: '/donate'},
         ],
 
 

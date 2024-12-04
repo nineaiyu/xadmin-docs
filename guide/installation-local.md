@@ -202,7 +202,7 @@ python -m celery -A server beat -l INFO --scheduler django_celery_beat.scheduler
 python -m celery -A server worker -P threads -l INFO -c 10 -Q celery --heartbeat-interval 10 -n celery@%h --without-mingle
 ```
 
-#### 3.任务监控，在windows无需执行，因为Windows平台无法正常运行
+#### 3.任务监控[windows可能会异常]
 
 ```shell
 python -m celery -A server flower -logging=info --url_prefix=api/flower --auto_refresh=False  --address=0.0.0.0 --port=5566
