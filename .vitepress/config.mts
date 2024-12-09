@@ -74,6 +74,10 @@ export default defineConfig({
                     {
                         text: '客户端开发',
                         link: '/devguidelines/client'
+                    },
+                    {
+                        text: '教育开发',
+                        link: '/idea/jetbra'
                     }
                 ]
             },
