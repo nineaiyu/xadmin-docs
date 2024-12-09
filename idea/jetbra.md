@@ -21,7 +21,7 @@ https://www.jetbrains.com/zh-cn/webstorm/download
 a. macOS or Linux 系统：
 
 ```shell
-scripts/install.sh
+bash scripts/install.sh
 ```
 
 b. windows 系统：双击执行
