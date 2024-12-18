@@ -2,6 +2,10 @@
 
 环境依赖：Docker 环境 [下载](https://www.docker.com) 并安装运行 docker desktop
 
+为了防止容器过度使用机器资源，可将内存资源限制为2G (内存充足可忽略)
+
+- [Windows 资源限制](https://learn.microsoft.com/zh-cn/windows/wsl/wsl-config#configure-global-options-with-wslconfig)
+
 # ！！！ 注意
 每当依赖(requirements.txt或Python版本)有更新，必须在xadmin-server项目目录下，执行构建容器镜像命令``` docker compose build```
 
