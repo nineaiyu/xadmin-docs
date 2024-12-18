@@ -2,6 +2,9 @@
 
 环境依赖：Docker 环境 [下载](https://www.docker.com) 并安装运行 docker desktop
 
+# ！！！ 注意
+每当依赖(requirements.txt或Python版本)有更新，必须在xadmin-server项目目录下，执行构建容器镜像命令``` docker compose build```
+
 ## Pycharm 配置开发
 
 ### 1.打开pycharm，进行配置，操作如下：
