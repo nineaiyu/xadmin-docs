@@ -54,3 +54,9 @@ mysql-tzinfo-to-sql /usr/share/zoneinfo | mysql -u root mysql
 ![img_4.png](img_4.png)
 
 - a.修改后端配置或代码之后，一定要重启后端的Django服务，然后刷新前端页面
+
+## 9.开发阶段，ws报错
+
+![img_3.png](img_3.png)
+
+- a.可能是server未开启debug， 将```config.yml```中```# DEBUG: true```修改为```DEBUG: true```

@@ -115,6 +115,9 @@ export default defineConfig({
                     }, {
                         text: '字段权限',
                         link: '/advanced/field-permission'
+                    }, {
+                        text: '第三方存储',
+                        link: '/advanced/storages'
                     }
                 ]
             },{
