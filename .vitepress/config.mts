@@ -68,7 +68,7 @@ export default defineConfig({
                 text: '开发指南',
                 items: [
                     {
-                        text: '服务端开发',
+                        text: '服务端开发之容器',
                         link: '/devguidelines/server'
                     },
                     {
@@ -80,7 +80,7 @@ export default defineConfig({
                         link: '/idea/jetbra'
                     },
                     {
-                        text: 'Windows平台',
+                        text: '服务端开发之Windows平台',
                         link: '/devguidelines/windows'
                     }
                 ]

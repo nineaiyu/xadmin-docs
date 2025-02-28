@@ -36,11 +36,11 @@
 ![img_1.png](vscode/img_1.png)
 ![img_2.png](vscode/img_2.png)
 
-# 2.远端开发，需要配置Redis，mariadb，python 环境
+# 2.远端开发，需要配置Redis，postgresql，python 环境
 
 不限平台
 
-# 3.本地开发，需要配置Redis，mariadb，python 环境
+# 3.本地开发，需要配置Redis，postgresql，python 环境
 
 前端不限平台
 

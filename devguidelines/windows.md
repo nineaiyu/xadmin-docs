@@ -91,7 +91,7 @@ wsl -d Ubuntu
 
 - c.将```DB_HOST```和```REDIS_HOST```的值修改为```127.0.0.1```
 
-## 7.生成数据表并迁移
+## 7.生成数据表并迁移【server中所需的Python3.13.2环境和依赖自行安装】
 
 ```shell
 python manage.py makemigrations
