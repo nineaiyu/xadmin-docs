@@ -78,6 +78,10 @@ export default defineConfig({
                     {
                         text: '教育开发',
                         link: '/idea/jetbra'
+                    },
+                    {
+                        text: 'Windows平台',
+                        link: '/devguidelines/windows'
                     }
                 ]
             },

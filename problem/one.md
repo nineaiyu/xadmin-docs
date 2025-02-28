@@ -65,3 +65,16 @@ mysql-tzinfo-to-sql /usr/share/zoneinfo | mysql -u root mysql
 
 - 可以参考server源码中 Dockerfile-base 文件中的依赖，或者手动执行命令
   ```apt-get install libmariadb-dev gettext pkg-config make g++```
+
+## 12. windows下，提示如下
+
+```CommandError: Can't find msgfmt. Make sure you have GNU gettext tools 0.15 or newer installed.```
+
+![img_5.png](img_5.png)
+
+-
+
+需要点击下载安装[gettext](https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.23-v1.17/gettext0.23-iconv1.17-shared-64.exe)
+，然后重启关闭编辑器打开即可
+
+- 
