@@ -17,3 +17,6 @@
 - 你的问题 将会被优先处理
 - 可添加作者微信
 
+<img src="https://qiniu.cdn.xadmin.dvcloud.xin/wx.png"  height="188" width="188">
+
+## 承接各种Java，Python等项目开发或二次开发，Web，APP应用，小程序等项目，加微信私聊
