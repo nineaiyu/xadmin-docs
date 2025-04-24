@@ -23,6 +23,7 @@ apt update -y
 apt install postgresql-16 -y
 systemctl enable postgresql
 systemctl restart postgresql
+echo -e '\n127.0.0.1 postgresql' >> /etc/hosts   # 用于添加postgresql本地解析
 ```
 创建数据库并添加授权
 
@@ -70,6 +71,21 @@ apt install redis-server -y
 echo -e '\nrequirepass nineven' >> /etc/redis/redis.conf   # 用于添加redis密码
 systemctl enable redis-server
 systemctl restart redis-server
+echo -e '\n127.0.0.1 redis' >> /etc/hosts   # 用于添加redis本地解析
+```
+
+## 5.安装Python环境
+
+```shell
+apt install python3.12 python3.12-dev pkg-config libmariadb-dev gettext curl make g++ -y
+```
+
+## 6.创建虚拟环境，使用普通用户，上面的操作都是root用户
+
+```shell
+exit # 退出root用户
+cd   # 切换到家目录
+python3.12 -m venv py312
 ```
 
 #### 切记，上面的操作都在Windows的子系统中操作，下面的操作在编辑器中操作
@@ -78,12 +94,7 @@ systemctl restart redis-server
 
 # 二.服务端开发操作
 
-## 5.开启子系统，且该窗口不可以关闭，若关闭，则Redis和Postgresql 服务将会终止，在cmd中通过下面该命令启动子系统
-```shell
-wsl -d Ubuntu
-```
-
-## 6.修改 server 配置文件,复制```config_example.yml```为```config.yml```
+## 7.修改 server 配置文件,复制```config_example.yml```为```config.yml```
 
 - a.将config.yml里面的 ```DB_PASSWORD```，```REDIS_PASSWORD```，```DEBUG``` 取消注释
 
@@ -91,31 +102,49 @@ wsl -d Ubuntu
 
 - c.将```DB_HOST```和```REDIS_HOST```的值修改为```127.0.0.1```
 
-## 7.生成数据表并迁移【server中所需的Python3.13.2环境和依赖自行安装】
+## 8.开启子系统，且该窗口不可以关闭，若关闭，则Redis和Postgresql 服务将会终止，在cmd中通过下面该命令启动子系统
+
+```shell
+wsl -d Ubuntu
+```
+
+## 使用pycharm配置，第9步到12步，需要在子系统里面操作
+
+这个路径是根据本地路径来的，比如我的代码路径```w:\sources\xadmin-server```，则对应的子系统路径为
+```/mnt/w/sources/xadmin-server/```
+
+```shell
+cd
+source py312/bin/activate
+cd /mnt/w/sources/xadmin-server/
+```
+
+## 9.生成数据表并迁移【server中所需的Python3.13.2环境和依赖自行安装】
 
 ```shell
 python manage.py makemigrations
 python manage.py migrate
 ```
-## 8.编译国际化，下载IP数据库
+
+## 10.编译国际化，下载IP数据库
 ```shell
 python manage.py compilemessages  # 如果该命令报错，提示找不到msgfmt，参考第12个常见问题
 python manage.py download_ip_db -f
 ```
 
-## 9.创建超级管理员
+## 11.创建超级管理员
 
 ```shell
 python manage.py createsuperuser
 ```
 
-## 10.导入默认菜单，权限，角色等数据（仅新部署执行一次）
+## 12.导入默认菜单，权限，角色等数据（仅新部署执行一次）
 
 ```shell
 python manage.py load_init_json
 ```
 
-## 11.启动程序
+## 13.启动程序
 
 ### A.手动执行命令【下面命令一般是开发阶段操作】
 
@@ -140,4 +169,12 @@ python -m celery -A server worker -P threads -l INFO -c 10 -Q celery --heartbeat
 python -m celery -A server flower -logging=info --url_prefix=api/flower --auto_refresh=False  --address=0.0.0.0 --port=5566
 ```
 
-### B.使用编辑器启动服务[自行配置或者询问deepseek]
+## 14.Pycharm配置
+
+![img_8.png](img_8.png)
+![img_9.png](img_9.png)
+![img_10.png](img_10.png)
+![img_11.png](img_11.png)
+![img_12.png](img_12.png)
+
+## 使用其他编辑器启动服务[自行配置]

@@ -1,4 +1,4 @@
-# 1.服务端本地容器化开发【推荐】
+# 1.服务端本地容器化开发
 
 环境依赖：Docker 环境 [下载](https://www.docker.com) 并安装运行 docker desktop
 
