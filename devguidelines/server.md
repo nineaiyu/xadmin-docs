@@ -15,6 +15,7 @@
 
 - ![img_1.png](img_1.png)
 - ![img_2.png](img_2.png)
+- ![img_13.png](img_13.png)
 - ![img_3.png](img_3.png)
 
 ### 2.如果有异常，可能需要退出，重新启动pycharm
