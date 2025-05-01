@@ -23,7 +23,6 @@ apt update -y
 apt install postgresql-16 -y
 systemctl enable postgresql
 systemctl restart postgresql
-echo -e '\n127.0.0.1 postgresql' >> /etc/hosts   # 用于添加postgresql本地解析
 ```
 创建数据库并添加授权
 
@@ -71,7 +70,26 @@ apt install redis-server -y
 echo -e '\nrequirepass nineven' >> /etc/redis/redis.conf   # 用于添加redis密码
 systemctl enable redis-server
 systemctl restart redis-server
-echo -e '\n127.0.0.1 redis' >> /etc/hosts   # 用于添加redis本地解析
+```
+
+## 4.a 添加本地解析，由于wsl子系统重启之后，解析会自动失效，需要使用配置``` /etc/wsl.conf```自动添加解析
+
+```shell
+sudo vim  /etc/wsl.conf
+```
+
+在```[boot]```添加下面内容
+
+```shell
+command="echo 127.0.0.1 redis postgresql >> /etc/hosts"
+```
+
+```/etc/wsl.conf``` 内容大致如下
+
+```shell
+[boot]
+command="echo 127.0.0.1 redis postgresql >> /etc/hosts"
+systemd=true
 ```
 
 ## 5.安装Python环境
