@@ -72,9 +72,10 @@ mysql-tzinfo-to-sql /usr/share/zoneinfo | mysql -u root mysql
 
 ![img_5.png](img_5.png)
 
--
+- 需要点击下载安装[gettext](https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.23-v1.17/gettext0.23-iconv1.17-shared-64.exe)，然后重启关闭编辑器打开即可
 
-需要点击下载安装[gettext](https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.23-v1.17/gettext0.23-iconv1.17-shared-64.exe)
-，然后重启关闭编辑器打开即可
+## 13.菜单中，权限模型关联的时候，找不到对应的模型，在字段管理里面，搜不到该模型的角色权限
 
-- 
+- 该viewSet对应的serializer_class需要继承```BaseModelSerializer```，然后在前端执行下面两步
+  - 1.字段管理里面，重新生成字段数据，
+  - 2.菜单里面，重新生成对应权限
