@@ -2,7 +2,7 @@
 
 ## xadmin-server 安装部署
 
-xadmin-server 是基于Python环境开发，建议使用 ```Python3.12``` 进行安装部署
+xadmin-server 是基于Python环境开发，建议使用 ```Python3.13``` 进行安装部署
 
 ## 环境依赖
 

@@ -219,17 +219,17 @@ cd /data/xadmin/
 git clone https://github.com/nineaiyu/xadmin-client.git
 ```
 
-## 12. 通过官网安装22版本的node环境
+## 12. 通过官网安装23版本的node环境
 ```shell
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 ```
 
 ```shell
 source ~/.bashrc
-nvm install 22
-node -v # layouts.download.codeBox.shouldPrint
-npm -v # layouts.download.codeBox.shouldPrint
-npm install -g pnpm
+nvm install 23
+node -v # Should print "v23.11.0".
+corepack enable pnpm
+pnpm -v
 ```
 
 ## 13.编译安装
