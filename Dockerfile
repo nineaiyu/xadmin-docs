@@ -1,8 +1,8 @@
-FROM node:22.14.0-slim AS stage-build
+FROM node:23.11.0-slim AS stage-build
 
 WORKDIR /app
 RUN corepack enable
-RUN corepack prepare pnpm@10.4.1 --activate
+RUN corepack prepare pnpm@10.10.0 --activate
 
 ARG VERSION
 

@@ -3,7 +3,7 @@
 
 VERSION=$1
 
-node_images="registry.cn-beijing.aliyuncs.com/nineaiyu/node:22.14.0-slim"
+node_images="registry.cn-beijing.aliyuncs.com/nineaiyu/node:23.11.0-slim"
 
 npm_mirror="https://registry.npmmirror.com"
 
@@ -14,7 +14,7 @@ sed -i "s@VERSION=.*@VERSION=v${VERSION/v/}@" guide/demo.md
 fi
 
 
-cmd='corepack enable && corepack prepare pnpm@10.4.1 --activate \
+cmd='corepack enable && corepack prepare pnpm@10.10.0 --activate \
     && cd /app && pnpm install --frozen-lockfile && pnpm run docs:build'
 
 docker run --rm -it -v ./:/app -e TZ=Asia/Shanghai \
