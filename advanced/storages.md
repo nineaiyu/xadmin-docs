@@ -36,6 +36,8 @@ STORAGES = {
             'endpoint_url': "http://xadmin-dev-oss.oss-cn-zhangjiakou.aliyuncs.com", # 使用https报错？？？
             'bucket_name': "xadmin-dev-oss",
             'custom_domain':'devcdn.dvcloud.xin/xadmin-dev-oss'  # cdn域名，加速文件下载分发
+            # 如果没有cdn加速域名，需要配置oss域名，不要加http，还需要在oss配置 公共读 权限
+            # 'custom_domain':'xadmin-dev-oss.oss-cn-zhangjiakou.aliyuncs.com/xadmin-dev-oss'  
         },
     },
     'staticfiles': {
