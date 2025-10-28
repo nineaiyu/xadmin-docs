@@ -5,6 +5,6 @@
 以 root 用户执行如下命令一键安装
 
 ```shell
-VERSION=v4.2.0
+VERSION=v4.2.5
 curl -sSL https://github.com/nineaiyu/xadmin-server/releases/download/${VERSION}/quick_start.sh |bash
 ```
