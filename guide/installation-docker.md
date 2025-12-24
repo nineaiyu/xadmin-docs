@@ -228,6 +228,24 @@ services:
       - net
 ```
 
+注意：使用的letsencrypt免费证书服务，7天内，同一个域名可签5次
+```shell
+./web
+├── acme.sh
+│   ├── acme.sh
+│   ├── deploy
+│   └── notify
+├── conf   # web配置，用于镜像构建
+│   ├── nginx.conf
+│   └── xadmin-api-conf
+└── data   # 容器持久化目录，存放静态文件，证书，日志
+    ├── .acme.sh  # acme.sh 安装路径
+    ├── cert      # ssl证书，自动生成
+    ├── dist      # xadmin-client 静态文件
+    └── logs      # xadmin-web nginx服务日志
+
+```
+
 修改之后，启动服务，前台运行，查看输出是否正常，申请证书是否正常，测试访问是否正常
 ```shell
 cd /data/xadmin/xadmin-client/
