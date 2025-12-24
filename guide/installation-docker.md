@@ -46,12 +46,46 @@ sudo yum remove docker \
 sudo yum install -y yum-utils
 sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 ```
+#### 如果docker-ce.repo 下载失败，可使用清华docker-ce源
+```shell
+tee /etc/yum.repos.d/docker-ce.repo <<'EOF'
+[docker-ce-stable]
+name=Docker CE Stable - $basearch
+baseurl=https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/$releasever/$basearch/stable
+enabled=1
+gpgcheck=1
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/gpg
+
+[docker-ce-stable-source]
+name=Docker CE Stable - Sources
+baseurl=https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/$releasever/source/stable
+enabled=0
+gpgcheck=1
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/gpg
+
+[docker-ce-test]
+name=Docker CE Test - $basearch
+baseurl=https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/$releasever/$basearch/test
+enabled=0
+gpgcheck=1
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/gpg
+
+[docker-ce-test-source]
+name=Docker CE Test - Sources
+baseurl=https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/$releasever/source/test
+enabled=0
+gpgcheck=1
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/gpg
+
+EOF
+
+```
 
 ```shell
 sudo yum install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-##### 【可选】如果官方源，上面命令安装比较慢，可以使用下面命令，切换为清华源，然后再执行上面安装命令
+##### 【可选】如果使用官方源，上面命令安装比较慢，可以使用下面命令，切换为清华源，然后再执行上面安装命令
 
 ```shell
 sed -i 's+https://download.docker.com+https://mirrors.tuna.tsinghua.edu.cn/docker-ce+' /etc/yum.repos.d/docker-ce.repo
@@ -119,6 +153,10 @@ python manage.py createsuperuser
 ```shell
 python manage.py load_init_json
 ```
+上面命令执行完成后，退出容器
+```shell
+exit
+```
 
 # 前端构建部署
 
@@ -138,4 +176,62 @@ cd /data/xadmin/xadmin-client
 sh build.sh
 ```
 
-## [7.部署NGINX,并访问](../guide/installation-nginx)
+## 7.使用容器启动前端服务【必须先启动server服务】
+
+### 构建xadmin-web服务
+
+```shell
+cd /data/xadmin/xadmin-client/
+docker compose build
+```
+### 启动xadmin-web服务, 默认是80端口，如果服务器存在该端口占用，请修改docker-compose.yml文件，将第一个80端口改为其他端口，或者使用服务器自带NGINX部署服务，参考下一步骤8
+```shell
+cd /data/xadmin/xadmin-client/
+docker compose up -d
+```
+
+### 【可选】【开启免费ssl证书】【使用有公网的服务器，并且服务器无80，443端口监听】修改 ```docker-compose.yml``` 文件，
+
+#### 如果要使用ssl，并且使用acme.sh自动申请证书，请取消注释，并将 xadmin.dvcloud.xin 填写自己的域名！！！
+#### 如果要使用ssl，并且使用acme.sh自动申请证书，请取消注释，并将 xadmin@dvcloud.xin 填写自己的邮件！！！
+
+```shell
+services:
+  nginx-web:
+    image: xadmin-web
+    container_name: xadmin-web
+    hostname: xadmin-web
+    build:
+      context: .
+      dockerfile: Dockerfile-web
+    restart: always
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+#      DOMAIN: ${DOMAIN:-xadmin.dvcloud.xin}  # 如果要使用ssl，并且使用acme.sh自动申请证书，请取消注释，并将 xadmin.dvcloud.xin 填写自己的域名！！！
+#      EMAIL: ${EMAIL:-xadmin@dvcloud.xin}   # 如果要使用ssl，并且使用acme.sh自动申请证书，请取消注释，并将 xadmin@dvcloud.xin 填写自己的邮件！！！
+    volumes:
+      - ./web/acme.sh:/web/acme.sh
+      - ./web/data/dist:/web/dist
+      - ./web/data/.acme.sh:/root/.acme.sh
+      - ./web/data/cert:/web/cert
+      - ./web/data/logs:/var/log/nginx
+    ports:
+#      - "443:443"  # 如果要使用ssl，请取消注释
+      - "80:80"
+    networks:
+      - net
+```
+
+修改之后，启动服务，前台运行，查看输出是否正常，申请证书是否正常
+```shell
+cd /data/xadmin/xadmin-client/
+docker compose up 
+```
+
+如果正常，停止上面命令，请执行下面命令，放后台运行
+```shell
+cd /data/xadmin/xadmin-client/
+docker compose up -d
+```
+
+## [8.部署NGINX,并访问](../guide/installation-nginx)
