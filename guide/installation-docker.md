@@ -176,7 +176,7 @@ cd /data/xadmin/xadmin-client
 sh build.sh
 ```
 
-## 7.使用容器启动前端服务【必须先启动server服务】
+## 7.使用容器启动前端服务【必须先启动server服务】【步骤7和8任选一个】
 
 ### 构建xadmin-web服务
 
@@ -234,4 +234,4 @@ cd /data/xadmin/xadmin-client/
 docker compose up -d
 ```
 
-## [8.部署NGINX,并访问](../guide/installation-nginx)
+## [8.部署NGINX,并访问](../guide/installation-nginx) 【步骤7和8任选一个】
