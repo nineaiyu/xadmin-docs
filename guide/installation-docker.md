@@ -190,7 +190,13 @@ cd /data/xadmin/xadmin-client/
 docker compose up -d
 ```
 
-### 【可选】【开启免费ssl证书】【使用有公网的服务器，并且服务器无80，443端口监听】修改 ```docker-compose.yml``` 文件，
+### 开启域名Https加密访问，使用acme.sh免费SSL证书【可选】
+
+#### 前置条件
+    - 有一个域名【使用国内服务器，域名必须备案】，有公网IP，并且域名已经解析到该服务器的公网IP
+    - 该有公网的服务器无80，443端口监听
+
+#### 修改文件 ```docker-compose.yml``` ，需要修改三个内容，参考如下三个注释
 
 #### 如果要使用ssl，并且使用acme.sh自动申请证书，请取消注释，并将 xadmin.dvcloud.xin 填写自己的域名！！！
 #### 如果要使用ssl，并且使用acme.sh自动申请证书，请取消注释，并将 xadmin@dvcloud.xin 填写自己的邮件！！！
@@ -222,7 +228,7 @@ services:
       - net
 ```
 
-修改之后，启动服务，前台运行，查看输出是否正常，申请证书是否正常
+修改之后，启动服务，前台运行，查看输出是否正常，申请证书是否正常，测试访问是否正常
 ```shell
 cd /data/xadmin/xadmin-client/
 docker compose up 
@@ -233,5 +239,6 @@ docker compose up
 cd /data/xadmin/xadmin-client/
 docker compose up -d
 ```
+上面完成后，请访问 https://域名 访问服务，如果正常，恭喜，安装成功，无需操作第8步
 
 ## [8.部署NGINX,并访问](../guide/installation-nginx) 【步骤7和8任选一个】
