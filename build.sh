@@ -14,7 +14,7 @@ sed -i "s@VERSION=.*@VERSION=v${VERSION/v/}@" guide/demo.md
 fi
 
 
-cmd='corepack enable && corepack prepare pnpm@10.10.0 --activate \
+cmd='corepack enable && corepack prepare pnpm@11.25.0 --activate \
     && cd /app && pnpm install --frozen-lockfile && pnpm run docs:build'
 
 docker run --rm -it -v ./:/app -e TZ=Asia/Shanghai \

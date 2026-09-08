@@ -2,7 +2,7 @@ FROM node:24.20.0-slim AS stage-build
 
 WORKDIR /app
 RUN corepack enable
-RUN corepack prepare pnpm@10.10.0 --activate
+RUN corepack prepare pnpm@11.25.0 --activate
 
 ARG VERSION
 
