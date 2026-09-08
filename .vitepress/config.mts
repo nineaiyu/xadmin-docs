@@ -122,6 +122,10 @@ export default defineConfig({
                     }, {
                         text: '第三方存储',
                         link: '/advanced/storages'
+                    },
+                    {
+                        text: '表单上传协议（FormData v1）',
+                        link: '/advanced/form-data-upload'
                     }
                 ]
             },{
