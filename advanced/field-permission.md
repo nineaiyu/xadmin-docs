@@ -24,15 +24,13 @@ class BaseRoleRuleInfo(BaseModelSerializer):
     rules = BasePrimaryKeyRelatedField(queryset=DataPermission.objects, allow_null=True, required=False, many=True,
                                        format="{name}", attrs=['pk', 'name', 'get_mode_type_display'],
                                        label=_("Data permission"))
-    mode_type = LabeledChoiceField(choices=ModeTypeAbstract.ModeChoices.choices, label=_("Mode type"),
-                                   default=ModeTypeAbstract.ModeChoices.OR.value)
 
 
 class UserSerializer(BaseRoleRuleInfo):
     class Meta:
         model = UserInfo
         fields = ['pk', 'avatar', 'username', 'nickname', 'phone', 'email', 'gender', 'block', 'is_active',
-                  'password', 'dept', 'description', 'last_login', 'date_joined', 'roles', 'rules', 'mode_type']
+                  'password', 'dept', 'description', 'last_login', 'date_joined', 'roles', 'rules']
 
         extra_kwargs = {'last_login': {'read_only': True}, 'date_joined': {'read_only': True},
                         'rules': {'read_only': True}, 'pk': {'read_only': True}, 'avatar': {'read_only': True},
