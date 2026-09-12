@@ -46,3 +46,23 @@
 前端不限平台
 
 后端支持mac, 有限支持Windows， Windows平台无法正常启动任务监控命令
+
+# 4. 分层与命名约定
+
+- **app 布局**：`models/`（或单文件）、`serializers/`、`views.py`、`urls.py`、`config.py`
+  （`URLPATTERNS` 自动注入总路由 + `PERMISSION_WHITE_REURL` 白名单）。完整链路见
+  [example/new-app-api.md](../example/new-app-api.md)；
+- **新业务能力一律独立 app**，不要往 `system` 里加（`system` 已冻结扩容）；
+- **ViewSet**：资源名 + `ViewSet`，继承 `BaseModelSet` 等（选型见
+  server `docs/architecture/framework-cookbook.md`）；**docstring 必写**——菜单与
+  访问日志的显示名取自它；
+- **权限码**：PERMISSION 菜单 `name` = `动作:组件名`（见
+  [example/new-app-menu.md](../example/new-app-menu.md)）；
+- **响应**：统一 `ApiResponse`（`code=1000` 成功），不要自造响应形状。
+
+# 5. 测试规范
+
+- 后端 pytest（`tests/unit` + `tests/integration`）、前端 vitest、E2E playwright 的
+  范式与运行命令见 [example/new-app-test.md](../example/new-app-test.md)；
+- 红线：新功能 100% 携带测试（CI 阻断）；改动后端后跑 `pnpm test:e2e:fresh`；
+- 前后端契约变更：先改 server `docs/schema/`，再 `pnpm gen:metadata-types` 重新生成类型。
