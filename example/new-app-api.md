@@ -104,10 +104,10 @@ class Book(DbAuditModel):
 
 ## 4.编写序列化器【请务必仔细阅读】
 
-#### 在```demo```目录中，新创建一个```utils```目录，然后在```utils```目录中创建```serializer.py```文件
+#### 在```demo```目录中，新创建一个```serializers```目录，然后在其中创建```book.py```文件（与仓库内真实示例 demo/serializers/book.py 同构）
 
 ```shell
-# 文件位置 demo/utils/serializer.py
+# 文件位置 demo/serializers/book.py
 
 from rest_framework import serializers
 
@@ -189,6 +189,11 @@ class BookSerializer(BaseModelSerializer):
 
 ```
 
+进阶：表单字段较多时，可在 `Meta` 里用 `tabs = [TabsColumn("分组名", ["字段", ...]), ...]`
+做分组表单（真实示例见 `demo/serializers/book.py`）。**序列化器声明式字段会同时驱动
+search-columns 元数据与前端渲染**——改字段先想清楚三层影响（元数据/权限码关联模型/前端列）。
+最新完整版始终以仓库内 `demo/serializers/book.py` 与 `demo/views.py` 为准。```
+
 ## 5.编写视图
 
 ```shell
@@ -197,7 +202,7 @@ class BookSerializer(BaseModelSerializer):
 from django_filters import rest_framework as filters
 from rest_framework.decorators import action
 
-from common.core.filter import BaseFilterSet
+from common.core.filter import BaseFilterSet, PkMultipleFilter
 from common.core.modelset import BaseModelSet, ImportExportDataAction
 from common.core.pagination import DynamicPageNumber
 from common.core.response import ApiResponse
@@ -213,10 +218,15 @@ class BookViewSetFilter(BaseFilterSet):
     author = filters.CharFilter(field_name='author', lookup_expr='icontains')
     publisher = filters.CharFilter(field_name='publisher', lookup_expr='icontains')
 
+    # 自定义的搜索模板，针对用户搜索，前端已经内置 api-search-user 模板处理
+    managers2 = PkMultipleFilter(input_type="api-search-user")
+    # 关联关系搜索的时候，默认是主键pk；数据量大时可改为输入框（input）
+    managers = PkMultipleFilter(input_type="input")
+
     class Meta:
         model = Book
         fields = ['name', 'isbn', 'author', 'publisher', 'is_active', 'publication_date', 'price',
-                  'created_time']  # fields用于前端自动生成的搜索表单
+                  'created_time', 'managers', 'managers2']  # fields用于前端自动生成的搜索表单
 
 
 class BookViewSet(BaseModelSet, ImportExportDataAction):
