@@ -76,6 +76,10 @@ MENU 类型填前端 `src/views/` 下的组件路径（不带扩展名），如 
 生产种子放在 server 仓库 `loadjson/`（`menu.json` / `menumeta.json`），格式为
 `{model, pk, fields}` 的 Django fixture 风格 JSON。适合随版本分发一批固定菜单：
 
+> 单个模型的菜单种子也可由代码生成器直接产出：`python manage.py generate_crud <app>.<Model>`
+> 会写 `loadjson/seed_<app>_<model>.json`（meta + 页面菜单 + 权限码，pk 为 uuid5 确定性值，
+> 重复 `loaddata` 覆盖同一批行；权限码已关联模型）。见服务端 ADR-027。
+
 - `menumeta.json`：先建 `meta`（title/icon/rank/showLink），拿到 pk；
 - `menu.json`：`parent` 指向上级菜单 pk，`menu_type` 按三类型取值，PERMISSION 条目
   填 `name`/`path`/`method`/`model`；

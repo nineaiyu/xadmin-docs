@@ -102,6 +102,13 @@ class Book(DbAuditModel):
 
 ```
 
+> **快速通道（可选）**：模型写好后，后端四件套 + 前端页面 + 菜单种子可由代码生成器一次产出——
+> ```shell
+> python manage.py generate_crud demo.Book [--frontend-root ../xadmin-client] [--with-import-export] [--dry-run]
+> ```
+> 生成物与下面各节手写范式同源（服务端 [ADR-027](../../xadmin-server/docs/adr/ADR-027-code-generator.md)），
+> 生成后仍需按本教程复核（关联字段 `input_type`、菜单上级）。下文保留手写步骤，便于逐层理解与按需改写。
+
 ## 4.编写序列化器【请务必仔细阅读】
 
 #### 在```demo```目录中，新创建一个```serializers```目录，然后在其中创建```book.py```文件（与仓库内真实示例 demo/serializers/book.py 同构）
