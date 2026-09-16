@@ -106,7 +106,7 @@ class Book(DbAuditModel):
 > ```shell
 > python manage.py generate_crud demo.Book [--frontend-root ../xadmin-client] [--with-import-export] [--dry-run]
 > ```
-> 生成物与下面各节手写范式同源（服务端 [ADR-027](../../xadmin-server/docs/adr/ADR-027-code-generator.md)），
+> 生成物与下面各节手写范式同源（服务端 [ADR-027](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/adr/ADR-027-code-generator.md)），
 > 生成后仍需按本教程复核（关联字段 `input_type`、菜单上级）。下文保留手写步骤，便于逐层理解与按需改写。
 
 ## 4.编写序列化器【请务必仔细阅读】
