@@ -62,6 +62,10 @@ export default defineConfig({
                         text: 'MariaDB本地安装部署(可选)',
                         link: '/guide/installation-mariadb'
                     },
+                    {
+                        text: '版本升级与回滚',
+                        link: '/guide/upgrade'
+                    },
                 ]
             },
             {
