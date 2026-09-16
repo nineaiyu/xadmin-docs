@@ -72,3 +72,15 @@ bash ./xadmin.sh start
 - **升级窗口**：数据库迁移期间短暂停服，请避开业务高峰；
 - **数据卷**：升级不触碰数据卷（数据库 / 媒体文件），仅替换容器与镜像；
 - **PITR 兜底**：若启用 WAL 归档（见部署配置），可在极端情况下按时间点恢复。
+
+### 动态表单与审批（随版本升级的变更）
+
+1. **新增权限点**：`availableForms:FormMySubmission`、`resubmit:FormMySubmission`，已写入种子；存量库用
+   `python manage.py loaddata loadjson/menu.json loadjson/menumeta.json` 补齐（或重跑 `load_init_json`）。
+   - `available-forms` 与 list 权限同口径：存量角色未重新授权也能正常填报；
+   - `resubmit` 属新增功能，角色勾选后「重新提交」按钮才可用。
+2. **填报页数据源切换**：由「表单设计器列表接口」改为 `available-forms`（定义类资源），普通员工无需设计器权限即可填报。
+3. **审批自动完成**：动态表单提交类的审批单在审批通过后由服务端自动落库，申请人无需再次提交；
+   multipart 或超大请求体仍按原协议由客户端携令牌重放。
+4. **开箱模板**（可选）：新装系统执行 `python manage.py seed_demo_org` 一键生成示例组织、预置角色（四层权限）
+   与场景模板，账号 `demo_staff` / `demo_lead` / `demo_fin`。
