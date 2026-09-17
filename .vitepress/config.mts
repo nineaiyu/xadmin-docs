@@ -1,5 +1,4 @@
 import {defineConfig} from 'vitepress'
-import mdItCustomAttrs from 'markdown-it-custom-attrs'
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
     title: "xAdmin",
@@ -163,9 +162,17 @@ export default defineConfig({
     markdown: {
         lineNumbers: true,
         config: (md) => {
-            md.use(mdItCustomAttrs, 'image', {
-                'data-fancybox': "gallery"
-            })
+            // 图片统一挂 data-fancybox="gallery"（fancybox 灯箱分组）。
+            // 原用 markdown-it-custom-attrs，其唯一传递依赖 lodash.pick@4.4.0
+            // 全版本无补丁（pnpm audit 常驻 high，无升级路径）；此处内联等价实现
+            // （仅包裹 image 渲染规则），即移除该依赖、清账 audit。
+            const defaultImageRule = md.renderer.rules.image
+            md.renderer.rules.image = (tokens, idx, options, env, self) => {
+                tokens[idx].attrSet("data-fancybox", "gallery")
+                return defaultImageRule
+                    ? defaultImageRule(tokens, idx, options, env, self)
+                    : self.renderToken(tokens, idx, options)
+            }
         }
     },
     head: [

@@ -7,8 +7,5 @@
     "docs:build": "vitepress build",
     "docs:preview": "vitepress preview"
   },
-  "packageManager": "pnpm@11.25.0",
-  "dependencies": {
-    "markdown-it-custom-attrs": "^1.0.2"
-  }
+  "packageManager": "pnpm@11.25.0"
 }

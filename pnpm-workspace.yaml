@@ -1,2 +1,14 @@
 allowBuilds:
   esbuild: false
+
+# 供应链治理：传递依赖已知漏洞版本强制升到修复线（官方源 pnpm audit 驱动，2026-09-17）
+# 原则：仅范围内最小跳版，升级后跑 pnpm docs:build 验证；上游发布包含修复后应删除对应条目。
+# 注：pnpm 11 起 overrides 只读本文件（package.json 的 pnpm 字段被忽略）。
+overrides:
+  'vite@<6.4.3': '^6.4.3'
+  'esbuild@<0.25.0': '>=0.25.0'
+  'mdast-util-to-hast@<13.2.1': '>=13.2.1'
+  'nanoid@<3.3.18': '>=3.3.18'
+  'postcss@<8.5.23': '>=8.5.23'
+  'preact@<10.26.10': '>=10.26.10'
+  'rollup@<4.59.0': '>=4.59.0'
