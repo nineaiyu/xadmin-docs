@@ -1,0 +1,33 @@
+name: Docs Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  docs-build:
+    name: VitePress build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - uses: pnpm/action-setup@v3
+        name: Install pnpm
+        with:
+          version: 11
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build docs
+        # 站点构建门禁：死链 / 构建错误在此阻断（历史上 CI 只构建镜像，docs:build 失败长期无人发现）
+        run: pnpm docs:build
