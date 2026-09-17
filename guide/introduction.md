@@ -88,6 +88,11 @@ HTTP_BIND_HOST: 0.0.0.0
 HTTP_LISTEN_PORT: 8896
 GUNICORN_MAX_WORKER: 4
 
+# 功能模块裁剪（可选）：full（默认全功能）/ standard（内核+标配，推荐二开起点）/ core（仅内核）
+# 也可用 MODULE_ENABLE / MODULE_DISABLE 在预设基础上增减，如 MODULE_DISABLE: [analysis, chat]
+# 模块清单与裁剪范围见「进阶开发 → [功能裁剪（模块化）](/advanced/module-trim)」
+#MODULE_PRESET: standard
+
 # 需要将创建的应用写到里面
 XADMIN_APPS:
 ```

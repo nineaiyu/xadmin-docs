@@ -130,6 +130,10 @@ export default defineConfig({
                     {
                         text: '表单上传协议（FormData v1）',
                         link: '/advanced/form-data-upload'
+                    },
+                    {
+                        text: '功能裁剪（模块化）',
+                        link: '/advanced/module-trim'
                     }
                 ]
             },{
