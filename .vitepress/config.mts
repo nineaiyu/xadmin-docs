@@ -79,10 +79,6 @@ export default defineConfig({
                         link: '/devguidelines/client'
                     },
                     {
-                        text: '教育开发',
-                        link: '/idea/jetbra'
-                    },
-                    {
                         text: '服务端开发之Windows平台',
                         link: '/devguidelines/windows'
                     }
