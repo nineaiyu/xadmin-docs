@@ -85,10 +85,26 @@ bash ./xadmin.sh start
 4. **开箱模板**（可选）：新装系统执行 `python manage.py seed_demo_org` 一键生成示例组织、预置角色（四层权限）
    与场景模板，账号 `demo_staff` / `demo_lead` / `demo_fin`。
 
+### 数据库迁移结构（2026 年度变更合并）
+
+自 4.2.5（`main`）以来的全部结构变更已合并为 **4 个新增迁移文件**，`main` 既有迁移文件保持原样：
+
+| 应用 | 新增迁移 | 覆盖内容 |
+| --- | --- | --- |
+| `system` | `0004_aiknowledgechunk_aiknowledgedocument_aiprofile_and_more` | AI 档案/知识库、审批中心、数据分析、动态表单、开放平台、会话与审计增强、模块裁剪、检索索引（受控执行）与种子时间戳回填 |
+| `notifications` | `0003_messagecontent_deleted_at_and_more` | 消息软删除与列表索引 |
+| `message` | `0001_initial` | 聊天室模型（会话/成员/消息） |
+| `common` | `0002_alter_monitor_created_time` | 监控时间字段对齐 |
+
+- 从 4.2.5 升级：`migrate` 按常规执行（升级脚本自动完成），无需任何手工步骤；
+- 使用过内测 / `dev` 版本的库：同样直接 `migrate`——同名迁移不会重跑，被合并的旧文件记录仅留存于
+  `django_migrations` 表，对后续迁移无影响；
+- 检索索引（pg_trgm）采用受控执行：扩展不可用或单索引失败只告警不阻断迁移，检索自动回退顺序扫描。
+
 ### 表单采集 / 数据分析 / 审批中心（深度完善）
 
-> 对应 `system` app 迁移 `0005_dform_template_draft_task_delegate_from`（新增 `DynamicForm.is_template`、
-> 提交状态增加 `DRAFT`、节点任务增加 `delegate_from`）。三条新增均为向后兼容的可空/默认值字段，无需数据回填。
+> 相关结构变更（`DynamicForm.is_template`、提交状态 `DRAFT`、节点任务 `delegate_from`）随上表
+> `system` 合并迁移一并落地；三条新增均为向后兼容的可空/默认值字段，无需数据回填。
 
 1. **新增权限点**：`submit:FormMySubmission`（提交草稿）、`urge:SystemApprovalInstance`（催办），已写入种子；
    存量库用 `python manage.py loaddata loadjson/menu.json loadjson/menumeta.json` 补齐，或对两个权限点按主键
