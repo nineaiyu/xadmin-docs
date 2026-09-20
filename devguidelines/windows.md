@@ -147,7 +147,7 @@ python manage.py migrate
 
 ## 10.编译国际化，下载IP数据库
 ```shell
-python manage.py compilemessages  # 如果该命令报错，提示找不到msgfmt，参考第12个常见问题
+python manage.py compilemessages  # 若报错找不到 msgfmt，见常见问题第 4 条（/problem/one）
 python manage.py download_ip_db -f
 ```
 

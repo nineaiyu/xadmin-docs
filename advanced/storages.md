@@ -31,14 +31,14 @@ STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3.S3Storage",
         "OPTIONS": {
-            'access_key': "LTA*****fJdcR",
-            'secret_key': "lAj*****6Zi",
-            'endpoint_url': "http://xadmin-dev-oss.oss-cn-zhangjiakou.aliyuncs.com", # 使用https报错？？？
-            'bucket_name': "xadmin-dev-oss",
+            'access_key': "your-access-key-id",
+            'secret_key': "your-access-key-secret",
+            'endpoint_url': "http://your-bucket.oss-cn-zhangjiakou.aliyuncs.com",  # https 环境请同步改为 https
+            'bucket_name': "xadmin-oss",
             'url_protocol': 'http:', # 使用 http协议，默认是 https协议
-            'custom_domain':'devcdn.dvcloud.xin/xadmin-dev-oss'  # cdn域名，加速文件下载分发
+            'custom_domain':'cdn.example.com/xadmin-oss'  # cdn域名（占位符），加速文件下载分发
             # 如果没有cdn加速域名，需要配置oss域名，不要加http，还需要在oss配置 公共读 权限
-            # 'custom_domain':'xadmin-dev-oss.oss-cn-zhangjiakou.aliyuncs.com/xadmin-dev-oss'  
+            # 'custom_domain':'your-bucket.oss-cn-zhangjiakou.aliyuncs.com/xadmin-oss'
         },
     },
     'staticfiles': {
@@ -48,48 +48,16 @@ STORAGES = {
 
 ```
 
-## 2.MINIO存储配置
+## 2. MinIO / S3 兼容存储配置
 
-### 添加配置
+> 项目未内置 MinIO 专用配置键（`config.yml` 中的 `MINIO_*` 不会被读取，未登记的配置键会被静默忽略）：
+> 请走 django-storages 的 S3 后端接入任意 S3 兼容服务，参数直接写在 `STORAGES` 的 `OPTIONS` 里。
+> 若希望改为从 `config.yml` 读取，需先在 `server/conf/defaults.py` 登记配置键后再经 `CONFIG` 引用。
 
-``` yml
-# config.yml
-
-# Minio服务地址
-MINIO_ENDPOINT_URL: "http://127.0.0.1:9000"
-# Minio账号或KEY
-MINIO_ACCESS_KEY: "USR"
-# Minio密码或KEY
-MINIO_SECRET_KEY: "PWD"
-# Minio中桶名称，需要自己创建
-MINIO_BUCKET_NAME: "xadmin"
-# 同名文件是否允许覆盖
-MINIO_FILE_OVERWRITE: false
-# 是否使用Https，False就是使用Http
-MINIO_USE_SSL: false
-```
+### a.安装相关存储包
 
 ```shell
-pip install django-storages boto3 minio
-```
-
-### 添加配置
-
-``` yml
-# config.yml
-
-# Minio服务地址
-MINIO_ENDPOINT_URL: "http://127.0.0.1:9000"
-# Minio账号或KEY
-MINIO_ACCESS_KEY: "USR"
-# Minio密码或KEY
-MINIO_SECRET_KEY: "PWD"
-# Minio中桶名称，需要自己创建
-MINIO_BUCKET_NAME: "xadmin"
-# 同名文件是否允许覆盖
-MINIO_FILE_OVERWRITE: false
-# 是否使用Https，False就是使用Http
-MINIO_USE_SSL: false
+pip install django-storages boto3
 ```
 
 ### b.添加第三方应用
@@ -107,17 +75,17 @@ INSTALLED_APPS = [
 ### c.修改存储默认配置
 
 ```python
-### 静态文件也可一起放在OSS中，不过也可以放在本地
+### 静态文件也可一起放在 MinIO 中，不过也可以放在本地
 STORAGES = {
     'default': {
         "BACKEND": "storages.backends.s3.S3Storage",
         "OPTIONS": {
-            'access_key': CONFIG.MINIO_ACCESS_KEY,
-            'secret_key': CONFIG.MINIO_SECRET_KEY,
-            'endpoint_url': CONFIG.MINIO_ENDPOINT_URL,
-            'bucket_name': CONFIG.MINIO_BUCKET_NAME,
-            'file_overwrite': CONFIG.MINIO_FILE_OVERWRITE,
-            'use_ssl': CONFIG.MINIO_USE_SSL
+            'access_key': "your-minio-access-key",
+            'secret_key': "your-minio-secret-key",
+            'endpoint_url': "http://127.0.0.1:9000",   # MinIO 服务地址
+            'bucket_name': "xadmin",                    # 桶名称，需自己创建
+            'file_overwrite': False,                    # 同名文件是否允许覆盖
+            'use_ssl': False,                           # http 环境 False；https 为 True
         },
     },
     'staticfiles': {

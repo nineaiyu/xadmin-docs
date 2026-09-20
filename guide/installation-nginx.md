@@ -70,6 +70,8 @@ server {
     }
 
     # api 服务
+    # 注意：/flower 会随本段暴露到公网——生产环境必须配置 CELERY_FLOWER_AUTH（basic-auth），
+    # 或把 flower 从下面正则中移除（config_example.yml 默认仅绑定 127.0.0.1，不对外暴露）
     location ~ ^/(api|ws|flower|media|api-docs) {
         include conf.d/xadmin-api-conf;
     }

@@ -1,5 +1,10 @@
 # 添加菜单（目录 / 菜单 / 权限码）
 
+> **教程定位**：手写理解版。**快速上手优先走生成器主线**：
+> [《30 分钟：开发第一个业务模块》](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/guide/first-module-30min.md)
+> （`generate_crud` 直接产出菜单 + 权限点种子，`loaddata` 即完成本章大部分工作）；
+> 权威文档索引见[二次开发文档地图](/guide/index#二次开发文档地图)。
+
 > 菜单是本框架权限体系的入口：前端路由显隐、按钮权限、接口路径鉴权、字段权限的数据源
 > 全部来自菜单表。模型定义完成后（见 [new-app-api.md](./new-app-api.md)），必须完成本章的
 > 菜单/权限码注册，业务功能才对用户可见。

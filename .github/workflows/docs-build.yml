@@ -31,3 +31,54 @@ jobs:
       - name: Build docs
         # 站点构建门禁：死链 / 构建错误在此阻断（历史上 CI 只构建镜像，docs:build 失败长期无人发现）
         run: pnpm docs:build
+
+  doc-facts:
+    name: Doc facts (cross-repo)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout docs (this repo)
+        uses: actions/checkout@v4
+        with:
+          path: xadmin-docs
+
+      - name: Checkout server (fact sources + checker script)
+        # 事实源与校验脚本在 xadmin-server 仓库（单仓检出守卫由脚本内部处理）
+        uses: actions/checkout@v4
+        with:
+          repository: nineaiyu/xadmin-server
+          ref: dev
+          path: xadmin-server
+
+      - name: Checkout client (node / pnpm version facts)
+        uses: actions/checkout@v4
+        with:
+          repository: nineaiyu/xadmin-client
+          ref: dev
+          path: xadmin-client
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Check doc facts against code sources
+        # 站点内的「当前状态」事实（Python/Django/Node 版本徽章、客户端环境要求、覆盖率口径）
+        # 必须与 xadmin-server / xadmin-client 的代码事实源一致
+        env:
+          XADMIN_DOCS_DIR: ${{ github.workspace }}/xadmin-docs
+          XADMIN_CLIENT_DIR: ${{ github.workspace }}/xadmin-client
+        run: python xadmin-server/scripts/check_doc_facts.py
+
+      - name: Check docs structure gates
+        # 索引覆盖（xadmin-client/docs 亦纳入）与文档路径可达性（客户端侧由本次检出补齐）
+        env:
+          XADMIN_CLIENT_DIR: ${{ github.workspace }}/xadmin-client
+        run: |
+          python xadmin-server/scripts/check_doc_index.py
+          python xadmin-server/scripts/check_doc_paths.py
+
+      - name: Check docs site navigation coverage
+        # 站点内容页面必须接入 .vitepress/config.mts 导航（防孤儿页面）
+        env:
+          XADMIN_DOCS_DIR: ${{ github.workspace }}/xadmin-docs
+        run: python xadmin-server/scripts/check_docs_site_nav.py

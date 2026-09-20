@@ -7,11 +7,14 @@ xadmin-server 是基于Python环境开发，建议使用 ```Python3.13``` 进行
 ## 环境依赖
 
 ```
-python >=3.12
+python >=3.13
 nodejs >=22
 redis >=6
-mariadb > 10.5 或 mysql > 8.0 | postgresql 16
+mariadb > 10.5 或 mysql > 8.0 | postgresql 17
 ```
+
+> 上表为**最低要求**；官方镜像实际运行版本更高（如后端镜像 Python 3.14.x、前端构建镜像 Node 24.x），
+> 以 `Dockerfile` / `Dockerfile-base` 与发布镜像为准。
 
 ## 支持的数据库
 
@@ -21,7 +24,7 @@ mariadb > 10.5 或 mysql > 8.0 | postgresql 16
 - Oracle
 - SQLite
 
-具体参考官方文档：https://docs.djangoproject.com/zh-hans/5.0/ref/databases/
+具体参考官方文档：https://docs.djangoproject.com/zh-hans/6.0/ref/databases/
 
 ## Centos 9 Stream 下 Docker 容器部署
 
@@ -140,18 +143,15 @@ cd /data/xadmin/xadmin-server/
 docker compose up -d  # -d 参数是后台运行，如果去掉，则前台运行
 ```
 
-## 4.创建管理员用户，导入默认菜单，权限，角色等数据（仅新部署执行一次）
+## 4.初始化数据：创建管理员 + 导入默认菜单/权限/角色等（仅新部署执行一次，幂等）
 
 ```shell
 docker exec -it xadmin-server bash
 ```
 
 ```shell
-python manage.py createsuperuser
-```
-
-```shell
-python manage.py load_init_json
+python utils/init_data.py
+# 幂等：自动完成 migrate + 创建超管 xadmin（随机密码仅打印一次）+ 导入默认菜单/权限/角色；可用 XADMIN_ADMIN_PASSWORD=xxx 指定初始密码
 ```
 上面命令执行完成后，退出容器
 ```shell
@@ -173,7 +173,7 @@ git clone https://github.com/nineaiyu/xadmin-client.git
 
 ```shell
 cd /data/xadmin/xadmin-client
-sh build.sh
+sh build.sh    # 内部使用 docker run -it 构建，需在交互式终端执行（CI / 管道环境会报 the input device is not a TTY）
 ```
 
 ## 7.使用容器启动前端服务【必须先启动server服务】【步骤7和8任选一个】

@@ -1,7 +1,8 @@
 ## 表单上传 FormData 字段展开协议 v1
 
 > 对应 ADR-007（xadmin-server/docs/adr/ADR-007-multipart-form-data-v1-protocol.md）。
-> 本文档是**前后端唯一权威**的 multipart/form-data 键格式契约。
+> 本文是 multipart/form-data 键格式的**契约细节页**；权威实现以服务端解析器与服务端文档中心为准
+> （`common/drf/parsers/axios_form_data.py`，索引见 xadmin-server `docs/README.md`）。
 
 ### 背景
 

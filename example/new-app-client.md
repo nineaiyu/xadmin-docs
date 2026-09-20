@@ -1,31 +1,18 @@
 # 前端操作
 
-## 本地开发运行，记得在`vite.config.ts` 添加proxy代理，要不然无法访问api服务
+> **教程定位**：手写理解版（逐层拆解"为什么这么写"）。**快速上手优先走生成器主线**：
+> [《30 分钟：开发第一个业务模块》](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/guide/first-module-30min.md)；
+> 权威文档索引见[二次开发文档地图](/guide/index#二次开发文档地图)（组件手册 / 扩展流程 / 选型对比）。
+> 本文创建的前端三件套与生成器产物同源，可对照修改。
+>
+> 注：本文示例对应的仓库自带 demo app（Book）为**官方示例**（与框架同步演进）；
+> 新项目请以《30 分钟》的生成器（`generate_crud`）产物为准（图标统一走 `~icons/` 离线集）。
 
-```ts
-  proxy: {
-    "/api": {
-      target: "http://127.0.0.1:8896",
-      changeOrigin: true,
-      xfwd: true
-    },
-    "/media": {
-      target: "http://127.0.0.1:8896",
-      changeOrigin: true,
-      rewrite: path => path
-    },
-    "/ws": {
-      target: "ws://127.0.0.1:8896"
-    },
-    "/api-docs": {
-      target: "http://127.0.0.1:8896",
-      changeOrigin: true,
-      rewrite: path => path
-    }
-  },
-```
+## 本地开发运行
 
-或者
+`vite.config.ts` **已内置默认代理**（`/api`、`/media`、`/api-docs` → `http://127.0.0.1:8896`，`/ws` → `ws://127.0.0.1:8896`），后端按默认端口启动即可直接联调，**无需手工修改配置**（后端不在 8896 时，用环境变量 `E2E_API_PORT` 覆盖代理目标；详见 xadmin-client 仓库 README）。
+
+如需自定义代理，改 `createProxyConfig` 的入参即可：
 
 ```shell
       proxy: createProxyConfig({
@@ -79,10 +66,10 @@ import type {
     RePlusPageProps
 } from "@/components/RePlusPage";
 import {useRenderIcon} from "@/components/ReIcon/src/hooks";
-import CircleClose from "@iconify-icons/ep/circle-close";
+import CircleClose from "~icons/ep/circle-close";
 import {handleOperation} from "@/components/RePlusPage";
 import {useI18n} from "vue-i18n";
-import Success from "@iconify-icons/ep/success-filled";
+import Success from "~icons/ep/success-filled";
 import {message} from "@/utils/message";
 import {ElTag} from "element-plus";
 

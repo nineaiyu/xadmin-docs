@@ -1,8 +1,11 @@
 # 客户端开发不限平台
 
+> 环境要求以仓库为准：Node **≥ 22.22.1**（`.nvmrc` 为 v24）、pnpm **≥ 11**；完整步骤与门禁清单见
+> [xadmin-client README](https://github.com/nineaiyu/xadmin-client/blob/dev/README.md)。
+
 ## 1.客户端 WebStorm 配置使用
 
-本地需要安装nodejs环境，推荐使用 node v23.11.0 [下载](https://nodejs.org/zh-cn/download/prebuilt-installer)
+本地需要安装 nodejs 环境，推荐使用 [.nvmrc](https://github.com/nineaiyu/xadmin-client/blob/dev/.nvmrc) 指定的 LTS 版本 [下载](https://nodejs.org/zh-cn/download/prebuilt-installer)
 
 安装全局 pnpm 命令
 

@@ -37,6 +37,10 @@ export default defineConfig({
                         text: '项目介绍',
                         link: '/guide/introduction'
                     },
+                    {
+                        text: '快速体验（一键启动）',
+                        link: '/guide/quick-start'
+                    },
 
                 ]
             },
@@ -109,15 +113,12 @@ export default defineConfig({
                 text: '进阶开发',
                 items: [
                     {
-                        text: 'RBAC权限',
-                        link: '/advanced/permission'
+                        text: '主题索引',
+                        link: '/advanced/'
                     },
                     {
-                        text: '数据权限',
-                        link: '/advanced/data-permission'
-                    }, {
-                        text: '字段权限',
-                        link: '/advanced/field-permission'
+                        text: '权限体系（速览）',
+                        link: '/advanced/permission'
                     }, {
                         text: '第三方存储',
                         link: '/advanced/storages'
@@ -137,6 +138,10 @@ export default defineConfig({
                     {
                         text: '常见问题',
                         link: '/problem/one'
+                    },
+                    {
+                        text: '安装器 FAQ',
+                        link: '/problem/installer'
                     }
                 ]
             },

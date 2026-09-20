@@ -1,5 +1,9 @@
 # 测试（后端 / 前端 / E2E）
 
+> **教程定位**：手写理解版。按任务索引的测试步骤另见
+> [recipes R21/R22](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/guide/recipes.md)；
+> 权威文档索引见[二次开发文档地图](/guide/index#二次开发文档地图)。
+
 > 本仓红线纪律：**新功能 100% 携带测试**（单测或 E2E），CI 阻断；改动后端后必须跑
 > `pnpm test:e2e:fresh`（防止旧进程假失败）。本章给出三类测试的最小上手范式，
 > 全部可在仓库内找到真实范例。
@@ -39,9 +43,9 @@ assert response.data["code"] == 1000
 ### 运行
 
 ```shell
-pytest -q                          # 全量（约 40s / 1300+ 用例）
+pytest -q                          # 全量
 pytest -n auto -q                  # 并行（CI 同款）
-pytest --cov --cov-fail-under=55   # 覆盖率门禁
+pytest --cov --cov-fail-under=85   # 覆盖率门禁（CI test.yml 同款）
 ```
 
 注意：默认 sqlite `:memory:` 测试库，勿依赖 `select_for_update` 等 MySQL 专属语义

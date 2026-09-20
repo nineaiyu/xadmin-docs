@@ -2,15 +2,15 @@
 
 ## xadmin-server 安装部署
 
-xadmin-server 是基于Python环境开发，建议使用 ```Python3.12``` 进行安装部署
+xadmin-server 是基于 Python 环境开发，建议使用 Python 3.13+ 进行安装部署
 
 ## 环境依赖
 
 ```
-python >=3.12
+python >=3.13
 nodejs >=22
 redis >=6
-mariadb > 10.5 或 mysql > 8.0 | postgresql 16
+mariadb > 10.5 或 mysql > 8.0 | postgresql 17
 ```
 
 ## 支持的数据库
@@ -21,14 +21,14 @@ mariadb > 10.5 或 mysql > 8.0 | postgresql 16
 - Oracle
 - SQLite
 
-具体参考官方文档：https://docs.djangoproject.com/zh-hans/5.0/ref/databases/
+具体参考官方文档：https://docs.djangoproject.com/zh-hans/6.0/ref/databases/
 
 ## Centos 9 Stream 下本地直接安装部署
 
 ## 1.Python环境安装
 
 ```shell
-dnf install python3.12 python3.12-devel -y
+dnf install python3.13 python3.13-devel -y
 ```
 
 ## 2.1安装postgresql依赖环境  [mysql和postgresql 二选一，默认postgresql]
@@ -110,7 +110,7 @@ systemctl restart redis
 ```shell
 mkdir -pv /data/xadmin/
 cd /data/xadmin/
-python3.12 -m venv py312
+python3.13 -m venv py313
 ```
 
 ## 5.克隆后端代码到本地
@@ -131,10 +131,10 @@ dnf install MariaDB-devel -y
 ```
 
 ```shell
-source /data/xadmin/py312/bin/activate
+source /data/xadmin/py313/bin/activate
 pip install --upgrade pip
 cd /data/xadmin/xadmin-server
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-dev.txt   # 开发环境；仅部署运行用 requirements.txt
 ```
 
 ## 7.0 修改 server 配置文件
@@ -168,16 +168,11 @@ python manage.py compilemessages
 python manage.py download_ip_db -f
 ```
 
-## 8.创建超级管理员(操作之前必须配置好Redis和数据库)
+## 8.初始化数据：创建管理员 + 导入默认菜单/权限/角色等（仅新部署执行一次；幂等，操作之前必须配置好 Redis 和数据库）
 
 ```shell
-python manage.py createsuperuser
-```
-
-## 9.导入默认菜单，权限，角色等数据（仅新部署执行一次）
-
-```shell
-python manage.py load_init_json
+python utils/init_data.py
+# 自动：migrate + 创建超管（默认 xadmin，随机密码仅打印一次，可用 XADMIN_ADMIN_PASSWORD=xxx 指定）+ 导入默认种子（菜单/权限/角色/配置）
 ```
 
 ## 10.启动程序(启动之前必须配置好Redis和数据库)
@@ -206,6 +201,7 @@ python -m celery -A server worker -P threads -l INFO -c 10 -Q celery --heartbeat
 
 ```shell
 python -m celery -A server flower -logging=info --url_prefix=api/flower --auto_refresh=False  --address=0.0.0.0 --port=5566
+# 注意：--address=0.0.0.0 会暴露到外网，仅限本地开发；生产请绑定 127.0.0.1 并配置 CELERY_FLOWER_AUTH basic-auth
 ```
 
 # 前端构建部署
@@ -226,8 +222,8 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 
 ```shell
 source ~/.bashrc
-nvm install 23
-node -v # Should print "v23.11.0".
+nvm install 24
+node -v # 应输出 v24.20.0（与仓库 .nvmrc 一致；最低要求 Node >= 22.22.1）。
 corepack enable pnpm
 pnpm -v
 ```

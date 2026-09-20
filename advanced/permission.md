@@ -1,69 +1,42 @@
-# RBAC权限控制 （Role Based Access Control）权限指的是基于角色的访问控制
+# 权限体系（速览）
 
-![img.png](imgs/img.png)
+> 权限是二开最需要理解的框架能力之一。**权威文档在 xadmin-server 仓库**（随代码发布、与实现同步）：
+>
+> - [权限体系设计](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/architecture/permission.md)（API / 数据 / 字段三层 + 应用级授权，含调试指引与测试地图）；
+> - [数据权限配置教程](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/architecture/data-permission.md)、
+>   [字段权限配置教程](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/architecture/field-permission.md)（配图操作步骤）；
+> - 完整索引见[二次开发文档地图](/guide/index#二次开发文档地图)。
+>
+> 本页只给"速记 + 排障入口"，具体语义以权威文档为准。
 
-## 前端权限:前端权限主要是控制 页面和按钮展示用
+## 一、三层模型（速记）
 
-该权限是通过路由接口获取的 [initRouter](https://github.com/nineaiyu/xadmin-client/blob/main/src/router/utils.ts#L194)
+| 层 | 控制什么 | 配置入口 | 关键约定 |
+|----|----------|----------|----------|
+| API / 菜单权限 | 页面可达性 + 接口调用（method + path 匹配） | 菜单管理（目录 / 菜单 / 权限码） | 权限码 = `动作:组件名`（如 `list:SystemUser`）；**必须关联模型** |
+| 数据权限 | 数据行可见范围（16 种规则，且 / 或组合） | 数据权限页（规则绑定到菜单权限码） | **fail-closed**：无适用授权 = 空集 |
+| 字段权限 | 字段可见性（角色 × 菜单维度） | 角色管理页勾选字段白名单 | 「详情菜单」需单独配白名单，否则详情空白 |
 
-## 1.菜单权限
+## 二、前端怎么用（二开最常用）
 
-### 实现原理、代码
+- **页面级**：权限由后端菜单下发——没有权限就没有路由（前端不需要写判断）；
+- **按钮级**：`hasAuth("动作:组件名")` 或 `<Auth value="...">`（**没有 `v-auth` 指令**）；
+- **RePlusPage 页面**：`getDefaultAuths(instance, [...自定义动作])` 一次生成 `auth` 对象传入 `:auth`；
+- **组件名**：取自 `defineOptions({ name })`，与后端权限码的 `:` 后半段必须**一字不差**。
 
-页面整体的菜单存放在 [wholeMenus](https://github.com/nineaiyu/xadmin-client/tree/main/src/store/modules/permission.ts#L15)
-，所以我们只需要控制 wholeMenus 就能控制菜单的显示、隐藏。
+## 三、后端怎么用
 
-## 2.按钮、组件权限
+- 新增端点必须登记权限点：`python manage.py sync_menu_permissions`（详见
+  [框架开发遵循准则](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/%E6%A1%86%E6%9E%B6%E5%BC%80%E5%8F%91%E9%81%B5%E5%BE%AA%E5%87%86%E5%88%99.md)）；
+- 查询集过滤统一走 `get_filter_queryset`，**不要手写裸 `filter()`**（会绕过数据权限与审计口径）；
+- 字段裁剪由 `BaseModelSerializer` 自动完成（继承即有，无需业务代码处理）。
 
-### 函数方式判断权限
+## 四、排障入口
 
-按钮、组件、类方法权限都可用
-
-### 实现原理、代码
-
-通过 [hasAuth](https://github.com/nineaiyu/xadmin-client/blob/main/src/router/utils.ts#L382) 函数判断某些按钮、组件、类方法是否有按钮级别的权限
-
-```vue
-
-<el-button type="success" v-if="hasAuth('list:demoBook')">
-  拥有 'list:demoBook' 权限可见
-</el-button>
-```
-
-```ts
-hasAuth("list:demoBook") ? "显示" : "隐藏";
-```
-
-## demo 示例
-
-简单的增删改查权限，一般定义为
-
-```ts
-  const auth = reactive({
-    list: hasAuth("list:demoBook"),
-    create: hasAuth("create:demoBook"),
-    delete: hasAuth("delete:demoBook"),
-    update: hasAuth("update:demoBook"),
-    export: hasAuth("export:demoBook"),
-    import: hasAuth("import:demoBook"),
-    batchDelete: hasAuth("batchDelete:demoBook")
-});
-```
-
-```hasAuth("list:demoBook")``` 里面的```list:demoBook``` 是通过菜单管理中的权限进行添加的
-
-## 后端权限
-
-## 1.角色权限，该权限包含两种 源码```common.core.permission.IsAuthenticated.has_permission```
-
-- 请求权限，每个请求的URL地址
-- 字段权限，所展示或者编辑的字段
-
-请求角色判断流程如下
-![img_1.png](imgs/img_1.png)
-
-## 前端页面渲染表格或者表单
-
-- 1.请求 ```search-columns``` 接口，拿到表格或者表单字段，用于渲染表格或者表单
-- 2.请求 ```search-fields``` 接口，拿到搜索字段，用于渲染搜索
-- 3.请求对应接口，拿到对应数据
+| 现象 | 处理 |
+|------|------|
+| 非超管 403 / 整页不渲染 | 权限点未入库或未授权：`python manage.py doctor` → `sync_menu_permissions` → 角色授权 |
+| 列表空集但用户确有授权 | `python manage.py audit_data_permission_rules`（非法规则 + 不生效提示）；数据权限页「试算」按用户实跑 |
+| 详情抽屉空白 | 给**详情菜单**（`retrieve` 权限码所在菜单）配字段白名单 |
+| 按钮不显示 | 核对 `hasAuth` 的权限码与组件名是否一致 |
+| 搜索引擎类下拉为空 | 搜索组件同样受权限码控制（如 `list:SearchUser`），需登记权限点并授权 |

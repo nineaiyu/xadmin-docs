@@ -1,7 +1,7 @@
 # MariaDB本地安装部署(可选)
 ---
 
-### 可支持的数据库具体参考官方文档：https://docs.djangoproject.com/zh-hans/5.0/ref/databases/
+### 可支持的数据库具体参考官方文档：https://docs.djangoproject.com/zh-hans/6.0/ref/databases/
 
 ## 1.安装MariaDB安装部署(可选)
 
@@ -12,7 +12,10 @@ dnf install MariaDB-server MariaDB-client MariaDB-common MariaDB-devel -y
 
 本次安装仅是为了演示，若生产服务器使用，则需要根据自己需求进行数据库目录更改，配置等优化
 
-## 本人使用的数据库```/etc/my.cnf.d/server.cnf```配置
+## 示例数据库```/etc/my.cnf.d/server.cnf```配置
+
+> 以下为作者机器的示例配置：`datadir`、`innodb_buffer_pool_size`、`max_connections` 等需按机器规格调整；
+> 个别项（如 `expire_logs_days`、`query_cache_*`）在不同 MariaDB 版本中已弃用，请按当前版本文档核对。
 ```shell
 #
 # These groups are read by MariaDB server.
@@ -187,7 +190,7 @@ DB_PASSWORD: KGzKjZpWBp4R4RSa
 
 ## 4.本地部署直接重启生效
 ```shell
-source /data/xadmin/py312/bin/activate
+source /data/xadmin/py313/bin/activate
 cd /data/xadmin/xadmin-server/
 python manage.py restart all -d
 ```

@@ -5,7 +5,7 @@ layout: home
 hero:
   name: "xAdmin"
   text: "Django全栈管理系统"
-  tagline: 基于 Django5 + vue3 + element-plus 组装而成
+  tagline: 基于 Django 6.0 + Vue 3 + Element Plus 组装而成
   actions:
     - theme: brand
       text: 开始

@@ -3,28 +3,31 @@
 ## server 整体目录结构
 
 ```shell
-├── captcha                     #图片验证码应用
+├── captcha                     # 图片验证码应用
 ├── common                      # 项目工具类库，包含各种封装方法
-├── config.yml                   # 运行配置文件，包含数据库，Redis等配置信息
-├── docker-compose-sqlite.yml
+├── config.yml                  # 运行配置文件（由 config_example.yml 复制而来）
+├── data                        # 运行数据目录（日志 data/logs、临时文件等）
+├── demo                        # 官方示例 app（Book 四件套 + 上架审批/二次确认；教程见 docs/guide/）
 ├── docker-compose.yml          # docker compose 运行文件
-├── Dockerfile                  # 用与构建容器镜像文件
-├── LICENSE
-├── loadjson                  # 默认的菜单，权限，字段配置
-├── locale                    # 国际化配置，支持中文和英语
-├── logs                      # 运行日志
+├── Dockerfile                  # 用于构建容器镜像文件
+├── docs                        # 文档中心（二开必读见 docs/README.md）
+├── loadjson                    # 默认的菜单，权限，字段配置（种子）
+├── locale                      # 国际化配置，支持中文和英语
 ├── manage.py
-├── message                   # websocket 消息
-├── notifications             # 站内信，消息通知推送应用
-├── README.md
-├── requirements.txt          # Django 运行依赖
-├── server                    # 项目主应用
-├── settings                  # 项目相关配置应用
-└── system                    # 系统应用，包含用户，菜单，日志，角色等
+├── mfa                         # 多因素认证应用
+├── message                     # websocket 消息
+├── notifications               # 站内信，消息通知推送应用
+├── requirements.txt            # Django 运行依赖（开发另加 requirements-dev.txt）
+├── scripts                     # 门禁 / 自检脚本
+├── server                      # 项目主应用（settings / urls / asgi）
+├── settings                    # 系统设置应用
+├── system                      # 系统应用，包含用户，菜单，日志，角色等
+├── tests                       # 测试（unit / integration）
+└── utils                       # 一键启动与初始化脚本（dev_up.sh / init_data.py）
 
 ```
 
-## 项目配置模板文件```config_example.yml```
+## 项目配置模板文件 config_example.yml（节选）
 
 ```shell
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -36,7 +39,7 @@ SECRET_KEY:
 # DEBUG 模式 开启DEBUG后遇到错误时可以看到更多日志，正式服要禁用
 # DEBUG: true
 
-# DEBUG, INFO, WARNING, ERROR, CRITICAL can set. See https://docs.djangoproject.com/zh-hans/5.0/topics/logging/
+# DEBUG, INFO, WARNING, ERROR, CRITICAL can set. See https://docs.djangoproject.com/zh-hans/6.0/topics/logging/
 # 日志级别
 # LOG_LEVEL: DEBUG
 
@@ -45,7 +48,7 @@ SECRET_KEY:
 
 # Database setting, Support sqlite3, mysql, postgres ....
 # 数据库设置
-# ### 更多数据库配置，参考官方文档：https://docs.djangoproject.com/zh-hans/5.0/ref/databases/
+# ### 更多数据库配置，参考官方文档：https://docs.djangoproject.com/zh-hans/6.0/ref/databases/
 # 创建竖数据库sql
 # create database xadmin default character set utf8mb4 COLLATE utf8mb4_bin;
 # grant all on xadmin.* to server@'127.0.0.1' identified by 'KGzKjZpWBp4R4RSa';
@@ -91,20 +94,24 @@ GUNICORN_MAX_WORKER: 4
 # 功能模块裁剪（可选）：full（默认全功能）/ standard（内核+标配，推荐二开起点）/ core（仅内核）
 # 也可用 MODULE_ENABLE / MODULE_DISABLE 在预设基础上增减，如 MODULE_DISABLE: [analysis, chat]
 # 模块清单与裁剪范围见「进阶开发 → [功能裁剪（模块化）](/advanced/module-trim)」
-#MODULE_PRESET: standard
+# MODULE_PRESET: full
 
-# 需要将创建的应用写到里面
+# 需要将创建的应用写到里面（config_example.yml 开发兜底默认 XADMIN_APPS: [demo]）
 XADMIN_APPS:
 ```
+
+> 以上为节选（完整键与注释以仓库 `config_example.yml` 为准，另含 Celery / 日志 / 邮件 / 短信 / 监控等配置段）。
 
 ## client 整体目录结构
 
 ```shell
 ├── build
-├── build.sh                            # 构建就脚本
+├── build.sh                            # 构建脚本
 ├── commitlint.config.js
+├── contract                            # 后端契约镜像（pnpm sync:contract 同步）
 ├── docker-compose.yml                  # docker compose 运行文件
 ├── Dockerfile                          # 用与构建容器镜像文件
+├── e2e                                 # Playwright E2E（纪律见 e2e/README.md）
 ├── eslint.config.js
 ├── index.html
 ├── LICENSE
@@ -132,11 +139,13 @@ XADMIN_APPS:
 │   ├── style
 │   ├── utils           
 │   └── views               #页面
+├── playwright.config.ts
+├── scripts                             # 校验脚本（版本 / 契约 / 体积等）
 ├── stylelint.config.js
-├── tailwind.config.ts
 ├── tsconfig.json
 ├── types
-└── vite.config.ts
+├── vite.config.ts
+└── vitest.config.ts
 
 ```
 
@@ -146,178 +155,43 @@ XADMIN_APPS:
 
 ## RePlusPage
 
-### 使用了自封装的RePlusPage组件```src/components/RePlusPage/src/utils/types.ts```，参数如下
+前端页面基于自封装的 RePlusPage 组件（真源：`src/components/RePlusPage/src/utils/types.ts`，随版本演进；本页不再复制易漂移的类型快照）。
 
-```ts
-import type {
-    PlusColumn,
-    PlusDescriptionsProps,
-    PlusSearchProps,
-    RecordType
-} from "plus-pro-components";
-import type {
-    PaginationProps,
-    PureTableProps,
-    TableColumnRenderer,
-    TableColumns
-} from "@pureadmin/table";
-import type {BaseApi} from "@/api/base";
-import type {formDialogOptions} from "./handle";
-import type {OperationProps} from "@/components/RePlusPage";
-import type {PureTableBarProps} from "@/components/RePureTableBar";
-import type {VNode} from "vue";
-import type {Mutable} from "@vueuse/core";
-import type {SearchColumnsResult, SearchFieldsResult} from "@/api/types";
+核心输入：
 
-interface TableColumn {
-    /** 是否隐藏 */
-    hide?: boolean | CallableFunction;
-    /** 自定义列的内容插槽 */
-    slot?: string;
-    /** 自定义表头的内容插槽 */
-    headerSlot?: string;
-    /** 多级表头，内部实现原理：嵌套 `el-table-column` */
-    children?: Array<TableColumn>;
-    /** 自定义单元格渲染器（`jsx`语法） */
-    cellRenderer?: (data: TableColumnRenderer) => VNode | string;
-    /** 自定义头部渲染器（`jsx`语法） */
-    headerRenderer?: (data: TableColumnRenderer) => VNode | string;
-}
+| 参数 | 说明 |
+|---|---|
+| `api` | BaseApi 实例（如 `new BaseApi("/api/demo/book")`），列表查询与增删改查 / 导入导出都走它 |
+| `auth` | 权限对象（`getDefaultAuths` 生成，键与后端权限动作对应），控制页面 / 按钮显隐 |
+| `localeName` | 国际化前缀（对应前端 `locales/zh-CN.yaml` 下的节点） |
+| `listColumnsFormat` / `searchColumnsFormat` / `detailColumnsFormat` | 列装配出口（在框架默认渲染之后执行，可覆盖渲染器 / 宽度 / valueType） |
+| `addOrEditOptions` | 新增 / 编辑弹窗配置（可重写列组件，如 autocomplete） |
+| `operationButtonsProps` / `tableBarButtonsProps` | 行操作 / 工具栏按钮组 |
+| `searchResultFormat` / `beforeSearchSubmit` | 请求结果 / 提交参数加工 |
+| `pagination` / `pureTableProps` / `plusSearchProps` / `plusDescriptionsProps` | 透传底层组件 props |
 
-interface PageColumn extends PlusColumn, TableColumn {
-    // columns: Partial<Mutable<TableColumn> & { _column: object }>[]
-    _column: Partial<
-        Mutable<SearchFieldsResult["data"][0]> &
-        Mutable<SearchColumnsResult["data"][0]>
-    >;
-}
+最小示例：
 
-interface PageColumnList extends TableColumns {
-    prop?: string;
-    _column: Partial<
-        Mutable<SearchFieldsResult["data"][0]> &
-        Mutable<SearchColumnsResult["data"][0]>
-    >;
-}
+```vue
+<script lang="ts" setup>
+import { ref } from "vue";
+import { RePlusPage } from "@/components/RePlusPage";
+import { useDemoBook } from "./utils/hook";
 
-interface ApiAuthProps {
-    list?: string | boolean | null | BaseApi["list"];
-    importData?: string | boolean | null | BaseApi["importData"];
-    exportData?: string | boolean | null | BaseApi["exportData"];
-    create?: string | boolean | null | BaseApi["create"];
-    destroy?: string | boolean | null | BaseApi["destroy"];
-    update?: string | boolean | null | BaseApi["update"];
-    retrieve?: string | boolean | null | BaseApi["retrieve"];
-    partialUpdate?: string | boolean | null | BaseApi["partialUpdate"];
-    fields?: string | boolean | null | BaseApi["fields"];
-    batchDestroy?: string | boolean | null | BaseApi["batchDestroy"];
-}
+defineOptions({ name: "DemoBook" }); // 必须与菜单组件名一致
 
-interface RePlusPageProps {
-    api: Partial<BaseApi>;
-    title?: string;
-    auth: Partial<ApiAuthProps>;
-    /**
-     * 是否有多选框， 一般为第一列
-     */
-    selection?: boolean;
-    /**
-     * 加载组件是否同时加载数据
-     */
-    immediate?: boolean;
-    /**
-     * 是否有 操作列， 一般为最后一列
-     */
-    operation?: boolean;
-    /**
-     * 是否是 树 表格
-     */
-    isTree?: boolean;
-    /**
-     * 是否有 工具栏
-     */
-    tableBar?: boolean;
-    /**
-     * 国际化，对应 locales 中
-     */
-    localeName?: string;
-    /**
-     * PlusSearchProps， 参考文档：https://plus-pro-components.com/components/search.html#search-attributes
-     */
-    plusSearchProps?: Partial<PlusSearchProps>;
-    /**
-     * pureTableProps， 参考源码：https://github.com/pure-admin/pure-admin-table
-     */
-    pureTableProps?: Partial<PureTableProps>;
-    /**
-     * pureTableBarProps
-     */
-    pureTableBarProps?: Partial<PureTableBarProps>;
-    /**
-     * plusDescriptionsProps， 参考文档：https://plus-pro-components.com/components/descriptions.html
-     */
-    plusDescriptionsProps?: Partial<PlusDescriptionsProps>;
-    /**
-     * 对通过 request 获取的数据进行处理
-     * @param data
-     */
-    searchResultFormat?: <T = RecordType[]>(data: T[]) => T[];
-    /**
-     * pure table 的 columns, 并返回
-     * @param columns
-     */
-    listColumnsFormat?: (columns: PageColumnList[]) => PageColumnList[];
-    /**
-     * plus pro descriptions 的 columns, 并返回
-     * @param columns
-     */
-    detailColumnsFormat?: (columns: PageColumn[]) => PageColumn[];
-    /**
-     * plus pro search 的 columns, 并返回
-     * @param columns
-     */
-    searchColumnsFormat?: (columns: PageColumn[]) => PageColumn[];
-    baseColumnsFormat?: ({
-                             listColumns,
-                             detailColumns,
-                             searchColumns,
-                             addOrEditRules,
-                             addOrEditColumns,
-                             searchDefaultValue,
-                             addOrEditDefaultValue
-                         }) => void;
-    /**
-     * 搜索之前进行一些修改
-     * @param params
-     */
-    beforeSearchSubmit?: <T = RecordType>(params: T) => T;
-    /**
-     * 分页组件
-     */
-    pagination?: Partial<PaginationProps>;
-    /**
-     * 默认的添加，更新 方法
-     */
-    addOrEditOptions?: {
-        title?: "";
-        props?: Partial<formDialogOptions>;
-        form?: undefined;
-        apiReq?: (
-            formOptions: Partial<formDialogOptions> & { formData: RecordType }
-        ) => BaseApi | any;
-    };
-    /**
-     * 操作栏 按钮组方法
-     */
-    operationButtonsProps?: Partial<OperationProps>;
-    /**
-     * 工具栏 按钮组方法
-     */
-    tableBarButtonsProps?: Partial<OperationProps>;
-}
+const tableRef = ref();
+const { api, auth } = useDemoBook(tableRef);
+</script>
 
-export type {ApiAuthProps, RePlusPageProps, PageColumn, PageColumnList};
-
+<template>
+  <RePlusPage ref="tableRef" :api="api" :auth="auth" locale-name="demoBook" />
+</template>
 ```
 
-后端common/core里面的相关代码
+> 完整类型（含回收站 `recycleBin`、变更历史 `changeHistory`、异步导出 `allowAsyncExport` 等）
+> 以真源 `types.ts` 为准；逐层用法见 [前端教程](/example/new-app-client)，组件职责与扩展点见
+> 服务端组件手册（[component-handbook](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/architecture/component-handbook.md)）。
+>
+> 后端配合：`common/core/` 提供 `BaseModelSet` / `BaseModelSerializer` 与元数据接口（`search-columns` /
+> `search-fields`），页面列与搜索项由后端元数据驱动（见服务端文档中心 `docs/README.md`）。

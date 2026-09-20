@@ -1,16 +1,17 @@
 # 版本升级与回滚
 
-> 适用于 **Docker Compose 部署**（安装见 [容器化部署](./installation-docker.md)）。
-> 升级脚本按「预检 → 备份 → 迁移 → 重建」执行，并在结束时给出回滚指引。
+> 适用于 **xadmin-installer 一键部署**（安装见 [一键部署](./demo.md)）。
+> 升级脚本按「预检 → 加载镜像 → 备份 → 迁移收尾」执行，并在结束时给出回滚指引。
+> 手工 compose 部署（见 [容器化部署](./installation-docker.md)）的升级见文末「六、手工部署升级」。
 
 ## 一、升级前检查（预检）
 
-`7_upgrade.sh` 会自动完成以下检查，异常时中止或要求人工确认：
+`./xadmin.sh upgrade` 会自动完成以下检查（脚本 `scripts/7_upgrade.sh`），异常时中止或要求人工确认：
 
-- **磁盘空间**：目标目录可用空间 ≥ 5 GiB（镜像加载 + 数据库增量余量）；
-- **关键容器**：`xadmin-postgresql` / `xadmin-redis` 状态（unhealthy 时需人工确认）；
-- **备份目录**：`/backups` 可写（升级流程依赖数据库备份产物）；
-- **版本门槛**：当前版本满足最低升级要求。
+- **磁盘空间**：`VOLUME_DIR` 所在分区可用空间 ≥ 5 GiB（镜像加载 + 数据库增量余量）；
+- **关键容器**：`xadmin-postgresql` / `xadmin-redis` 状态（unhealthy 时需人工确认；未运行视为冷升级放行）；
+- **备份目录**：`${VOLUME_DIR}/db_backup` 可写（升级流程依赖数据库备份产物）；
+- **版本门槛**：当前版本 ≥ `v3.10.11`（更低版本请先按历史版本逐级升级）。
 
 手动确认项：
 
@@ -20,21 +21,23 @@
 ## 二、执行升级
 
 ```bash
-# 升级到最新版本
-bash scripts/7_upgrade.sh
+# 升级到 static.env 指定版本（默认最新）
+./xadmin.sh upgrade
 
-# 指定版本
-bash scripts/7_upgrade.sh v4.x.y
+# 升级到指定版本
+./xadmin.sh upgrade v4.x.y
 ```
 
 脚本流程（每步失败会给出中止/继续选项）：
 
-1. 加载新版本 Docker 镜像；
-2. **数据库备份**（失败时强烈建议中止排查，不要跳过）；
-3. 配置文件备份（输出路径会打印在终端）；
-4. 执行数据库迁移（结构变更，期间短暂停服）；
-5. 旧镜像清理（可选）；
-6. 完成提示 + **回滚指引**。
+1. 预检（磁盘 / 容器健康 / 备份目录）；
+2. 加载新版本 Docker 镜像（`scripts/3_load_images.sh`）；
+3. **数据库备份**（失败时强烈建议中止排查，不要跳过）；
+4. 配置文件备份（路径打印在终端，位于 `${VOLUME_DIR}/db_backup/config-<旧版本>-<时间>.conf`）；
+5. 执行数据库迁移，随后自动执行 `python manage.py post_upgrade`
+   （种子 / 权限点 / 语言包 / 缓存，幂等；漏做会出现「新入口 403 / 文案回退英文」）；
+6. 旧镜像清理（可选）；
+7. 完成提示 + **回滚指引**，之后执行 `./xadmin.sh start` 启动。
 
 ## 三、升级后验证
 
@@ -46,24 +49,30 @@ curl http://<你的地址>/api/common/api/health
 docker ps
 ```
 
+若出现「新菜单/按钮 403」或「界面文案回退英文」，在容器内补跑一次：
+
+```bash
+docker exec -i xadmin-server python manage.py post_upgrade
+```
+
 再登录系统抽查核心功能（列表、上传、消息、审批）。
 
 ## 四、回滚（新版本异常时）
 
 ```bash
 # 1. 停止服务
-bash ./xadmin.sh stop
+./xadmin.sh stop
 
-# 2. 恢复数据库（选择升级前的备份）
-bash scripts/6_db_restore.sh
+# 2. 恢复数据库（选择升级前第 3 步产生的备份文件）
+./xadmin.sh restore_db <备份文件路径>
 
-# 3. 恢复配置
-cp <终端打印的配置备份路径> config.txt
+# 3. 恢复配置（使用第 4 步打印的配置备份路径）
+cp <配置备份文件> /opt/xadmin/config/config.txt
 
 # 4. 回退版本并重新加载镜像
 #    编辑 static.env 将 VERSION 改回旧版本号
-bash scripts/3_load_images.sh
-bash ./xadmin.sh start
+./xadmin.sh load_image
+./xadmin.sh start
 ```
 
 ## 五、注意事项
@@ -73,7 +82,25 @@ bash ./xadmin.sh start
 - **数据卷**：升级不触碰数据卷（数据库 / 媒体文件），仅替换容器与镜像；
 - **PITR 兜底**：若启用 WAL 归档（见部署配置），可在极端情况下按时间点恢复。
 
+## 六、手工部署升级（git clone + compose）
+
+不使用安装器时，手工升级：
+
+```bash
+cd /data/xadmin/xadmin-server
+git pull
+docker compose build          # requirements.txt 有变更时
+docker compose up -d          # 重建并启动
+docker exec -i xadmin-server python manage.py post_upgrade   # 幂等：种子/语言包/缓存/权限扫描
+```
+
+回滚：`git checkout <旧版本 tag>` 后重跑上面三步；数据库从升级前的备份恢复
+（备份方法见 [容器化部署](./installation-docker.md)，或使用 `pg_dump` / `mariadb-dump`）。
+
 ### 动态表单与审批（随版本升级的变更）
+
+> 本节及以下变更说明适用于 **dev 分支相对 4.2.5（main）的增量**：从 4.2.5 升级到包含这些
+> 变更的版本时按此核对；正式发布后本节将随版本号更新。
 
 1. **新增权限点**：`availableForms:FormMySubmission`、`resubmit:FormMySubmission`，已写入种子；存量库用
    `python manage.py loaddata loadjson/menu.json loadjson/menumeta.json` 补齐（或重跑 `load_init_json`）。
@@ -83,7 +110,7 @@ bash ./xadmin.sh start
 3. **审批自动完成**：动态表单提交类的审批单在审批通过后由服务端自动落库，申请人无需再次提交；
    multipart 或超大请求体仍按原协议由客户端携令牌重放。
 4. **开箱模板**（可选）：新装系统执行 `python manage.py seed_demo_org` 一键生成示例组织、预置角色（四层权限）
-   与场景模板，账号 `demo_staff` / `demo_lead` / `demo_fin`。
+   与场景模板，账号 `demo_staff` / `demo_lead` / `demo_fin`，初始密码 `Demo@2026!`（`--password` 可改）。
 
 ### 数据库迁移结构（2026 年度变更合并）
 
@@ -94,7 +121,7 @@ bash ./xadmin.sh start
 | `system` | `0004_aiknowledgechunk_aiknowledgedocument_aiprofile_and_more` | AI 档案/知识库、审批中心、数据分析、动态表单、开放平台、会话与审计增强、模块裁剪、检索索引（受控执行）与种子时间戳回填 |
 | `notifications` | `0003_messagecontent_deleted_at_and_more` | 消息软删除与列表索引 |
 | `message` | `0001_initial` | 聊天室模型（会话/成员/消息） |
-| `common` | `0002_alter_monitor_created_time` | 监控时间字段对齐 |
+| `common` | `0002_monitor_net_recv_mb_monitor_net_sent_mb_and_more` | 监控网络字段与告警记录 |
 
 - 从 4.2.5 升级：`migrate` 按常规执行（升级脚本自动完成），无需任何手工步骤；
 - 使用过内测 / `dev` 版本的库：同样直接 `migrate`——同名迁移不会重跑，被合并的旧文件记录仅留存于

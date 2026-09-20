@@ -1,19 +1,39 @@
 # 后端操作
 
+> **教程定位**：手写理解版（逐层拆解"为什么这么写"）。**快速上手优先走生成器主线**：
+> [《30 分钟：开发第一个业务模块》](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/guide/first-module-30min.md)；
+> 权威文档索引见[二次开发文档地图](/guide/index#二次开发文档地图)（组件手册 / 扩展流程 / 选型对比）。
+>
+> 注：仓库自带 demo app（Book）为**官方示例**（含上架审批 / 二次确认 / 回收站与变更历史 /
+> 定时任务接入，与框架同步演进；二开抄作业地图见 `demo/README.md`）；
+> 本文代码为教学简化版，最新形态以仓库真源为准。
+
+**两条路对照**（本文手写步骤 ↔ `generate_crud` 一条命令的产物）：
+
+| 本文步骤 | 生成器产物（`python manage.py generate_crud <app>.<Model>`） |
+|----------|------------------------------------------------------------|
+| §3 编写 models | 不变（模型仍需手写） |
+| §4 编写序列化器 | `<app>/serializers.py`（生成块，幂等合并） |
+| §5 编写视图 | `<app>/views.py`（生成块） |
+| §6 新建 urls.py | `<app>/urls.py` |
+| §7 新建 config.py | `<app>/config.py` |
+| 菜单 / 权限码手工建（见 new-app-menu） | `loadjson/seed_<app>_<model>.json` + `loaddata` 装载 |
+| 前端页面手写（见 new-app-client） | `src/views/<app>/<model>/` 三件套（xadmin-client 仓库） |
+
 ## 0.创建并修改 server 配置文件
 
 ```shell
 cp config_example.yml config.yml
 ```
 
-- a.将config.yml里面的 DB_PASSWORD ， REDIS_PASSWORD 取消注释
-- b.生成，并填写 SECRET_KEY， 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
+- a.将 config.yml 里面的 DB_PASSWORD，REDIS_PASSWORD 取消注释
+- b.生成，并填写 SECRET_KEY，加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
 
 ```shell
 cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49;echo
 ```
 
-将上面的命令生成的字符串填写到config.yml里面的 ```SECRET_KEY``` 配置项
+将上面的命令生成的字符串填写到 config.yml 里面的 ```SECRET_KEY``` 配置项
 
 ```shell
 # 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
@@ -21,10 +41,18 @@ cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49;echo
 SECRET_KEY: django-insecure-mlq6(#a^2vk!1=7=xhp#$i=o5d%namfs=+b26$m#sh_2rco7j^
 ```
 
+> 现状提示：开发环境**没有 config.yml 也能启动**——框架会回落读取 `config_example.yml` 并自动生成
+> `SECRET_KEY`（持久化到 `data/.secret_key`）；生产环境仍必须显式配置（多实例一致 + 已加密数据可解）。
+> 直接使用仓库提供的 `bash utils/dev_up.sh` 一键启动时，本节可跳过。
+
 ## 1.创建 django app
 
+> 本教程沿用**仓库内置的 `demo` app**（四件套齐全、可直接对照阅读，**无需创建**）；若从零练习，
+> 请把下文中的 `demo` 替换为你的 app 名后执行下面的命令。使用生成器主线时无需手工创建
+> （`generate_crud` 会自动补齐结构）。
+
 ```shell
-python3 manage.py startapp demo
+python3 manage.py startapp <你的 app 名>   # 仅从零练习时执行；仓库内置 demo 无需创建
 ```
 
 ## 2.在 ```config.yml``` 里面添加我们的app
@@ -36,6 +64,9 @@ XADMIN_APPS:
 ```
 
 ## 3.编写models
+
+> 以下为**教学简化版**（字段子集）；仓库内真实样例 `demo/models.py` 已含 `AutoCleanFileMixin`、
+> `UploadFile` 单/多附件关联（`file` / `files`）等完整形态，以真源为准。
 
 ```shell
 # 文件位置 demo/models.py
@@ -111,7 +142,7 @@ class Book(DbAuditModel):
 
 ## 4.编写序列化器【请务必仔细阅读】
 
-#### 在```demo```目录中，新创建一个```serializers```目录，然后在其中创建```book.py```文件（与仓库内真实示例 demo/serializers/book.py 同构）
+#### 在```demo```目录中，新创建一个```serializers```目录，然后在其中创建```book.py```文件
 
 ```shell
 # 文件位置 demo/serializers/book.py
@@ -196,10 +227,13 @@ class BookSerializer(BaseModelSerializer):
 
 ```
 
+> 以上为**教学简化版**（单表单 + 字段子集）；仓库内真实示例 `demo/serializers/book.py` 已演进为
+> `tabs` 分组表单（基本信息 / 管理员 / 文件信息）并扩展了 `file` / `files` 附件字段——两者对照阅读即可。
+
 进阶：表单字段较多时，可在 `Meta` 里用 `tabs = [TabsColumn("分组名", ["字段", ...]), ...]`
 做分组表单（真实示例见 `demo/serializers/book.py`）。**序列化器声明式字段会同时驱动
 search-columns 元数据与前端渲染**——改字段先想清楚三层影响（元数据/权限码关联模型/前端列）。
-最新完整版始终以仓库内 `demo/serializers/book.py` 与 `demo/views.py` 为准。```
+最新完整版始终以仓库内 `demo/serializers/book.py` 与 `demo/views.py` 为准。
 
 ## 5.编写视图
 
@@ -291,7 +325,9 @@ URLPATTERNS = [
 PERMISSION_WHITE_REURL = []
 ```
 
-## 8.迁移demo应用
+## 8.迁移 demo 应用
+
+> 仓库内置 demo 自带迁移（随 `init_data` / `migrate` 建表），无需手工迁移；本节针对你自己的 app。
 
 ```shell
 python manage.py makemigrations

@@ -1,81 +1,106 @@
-## 1. 前端不显示验证码或者提示服务器不允许登录，或者接口文档打开异常
+# 常见问题
 
-- a.可能是后端api服务未启动
-- b.前端未使用代理访问，出现跨域问题，代理需要在```vite.config.ts```中配置```proxy```字段
+> 本文覆盖"装不上 / 起不来 / 配置不生效"类问题；**开发期的高频坑**（元数据缺列、权限码、
+> 渲染器注册、静默失败等）见权威清单
+> [dev-pitfalls（24 条，持续更新）](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/dev-pitfalls.md)。
+> 一条命令自检：`python manage.py doctor`（密钥 / DB / Redis / 语言包 / 权限点 / 模块 / 契约，附修复命令）。
 
-如何解决： 浏览器F12进行调试模式，查看下请求是否正常
-![img.png](img.png)
+## 一、安装与启动
 
-## 2. 后端api服务已经启动，却无法正常访问
+### 1. 前端不显示验证码 / 提示「服务器不允许登录」/ 接口文档异常
 
-- a.后端服务不要使用常见端口启动，不建议使用80，8080，8000等常见端口，这些端口可能和本机所在端口冲突，导致无法访问
-- b.请先配置好后端服务所需的数据库和redis服务，否则无法正常访问
+- 后端 API 服务未启动或端口不通：确认后端已启动（默认 `8896`），
+  `curl http://127.0.0.1:8896/api/common/api/health` 返回 ok；
+- 前端开发代理**默认已配置**（指向 `127.0.0.1:8896`），后端不在默认端口时用环境变量
+  `E2E_API_PORT` 覆盖代理目标；浏览器 F12 查看请求是否正常。
 
-## 3. 新增应用之后，菜单权限或数据权限中不显示对应的字段或模型
+### 2. 后端 API 已启动，却无法正常访问
 
-- a. 确保该应用已经添加到 ```config.yml```中 ```XADMIN_APPS``` 中
-- b.1 添加应用之后，或者修改字段 需要执行数据库迁移命令```python manage.py sync_model_field```
-- b.2 或者 在前端页面-设置-字段管理中，点击重新生成字段数据（和上面命令一样，b.1和b.2选择其中一个执行）
-- c. 上述操作之后，记得刷新下前端页面 ！！！
+- 避免使用 80 / 8080 / 8000 等常见端口（易与本机其它服务冲突），默认用 `8896`；
+- 确认数据库与 Redis 已就绪（本地开发可 `bash utils/dev_up.sh --backend-only` 一键起依赖）。
 
-## 4. 服务器国际化不生效
-- a. 执行命令 ```python manage.py compilemessages```
+### 3. Ubuntu 无法正常安装 requirements.txt 依赖
 
-## 5.项目使用mariadb|mysql数据库，访问首页 提示报错
+- 参考 server 源码 `Dockerfile-base` 的依赖，或手动执行：
+  `apt-get install libmariadb-dev gettext pkg-config make g++`。
+
+### 4. Windows 提示 `Can't find msgfmt`
+
+```text
+CommandError: Can't find msgfmt. Make sure you have GNU gettext tools 0.15 or newer installed.
+```
+
+![img_5.png](img_5.png)
+
+- 安装 [gettext](https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.23-v1.17/gettext0.23-iconv1.17-shared-64.exe)
+  后重启编辑器即可（Windows 平台为有限支持，任务监控命令不可用）。
+
+### 5. 开发阶段 WS（WebSocket）报错
+
+![img_3.png](img_3.png)
+
+- 将 `config.yml` 中的 `# DEBUG: true` 改为 `DEBUG: true`（开发态才启用 WS 调试信息）。
+
+## 二、配置不生效
+
+### 6. 新增应用后，菜单权限 / 数据权限里不显示字段或模型
+
+- 确认应用已加入 `config.yml` 的 `XADMIN_APPS`；
+- 执行 `python manage.py sync_model_field`（或前端「字段管理 → 重新生成字段数据」，二选一）；
+- 刷新前端页面（改配置/代码后必须**重启后端进程**，挂载代码不热加载）。
+
+### 7. 服务器国际化不生效
+
+- 执行 `python manage.py compilemessages` 编译语言包；
+  升级后可直接跑 `python manage.py post_upgrade`（种子 + 语言包 + 缓存 + 权限扫描一键处理）。
+
+### 8. 菜单缓存未生效 / 权限关联时找不到对应模型
+
+- 菜单里定义的**组件名**要与前端 `defineOptions({ name })` 一致，权限码为 `动作:组件名`；
+- 找不到模型时检查对应 ViewSet 的 `serializer_class` 是否继承 `BaseModelSerializer`，
+  然后在前端执行：① 字段管理「重新生成字段数据」；② 菜单「重新生成对应权限」。
+
+![07.png](07.png)
+
+### 9. 批量添加权限后后端视图找不到 / 改代码后行为没变
+
+![img_4.png](img_4.png)
+
+- 修改后端配置或代码之后，一定**重启后端 Django 服务**（容器：`docker compose restart server celery-worker celery-heavy celery-beat`），然后刷新前端页面。
+
+## 三、运行时与部署
+
+### 10. 仿写 demo 后前端页面没有任何显示，但接口返回都正常
+
+![7616e55dc512797055995cc091094e62.png](7616e55dc512797055995cc091094e62.png)
+
+- 一般是菜单权限码与前端组件 `name` 不一致（`hasAuth("动作:组件名")` 为假 → 页面不渲染）；
+- 权限码与组件名必须**一字不差**，排查见 [dev-pitfalls #2](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/dev-pitfalls.md)。
+
+### 11. 使用 MariaDB / MySQL 时访问首页报错
 
 ![img_1.png](img_1.png)
 ![img_2.png](img_2.png)
 
-- a. 这种一般是数据库未设置时区数据，可参考文档 [官方文档](https://mariadb.com/kb/en/mariadb-tzinfo-to-sql/)，或者进行
-  mariadb 部署的服务器或者容器，执行下面命令
-##### 使用mariadb执行
+- 一般是数据库未设置时区数据，参考 [MariaDB 时区文档](https://mariadb.com/kb/en/mariadb-tzinfo-to-sql/)，
+  在数据库服务器 / 容器内执行：
+
 ```shell
+# mariadb
 mariadb-tzinfo-to-sql /usr/share/zoneinfo | mariadb -u root mysql
-```
-##### 使用mysql执行
-```shell
+# mysql
 mysql-tzinfo-to-sql /usr/share/zoneinfo | mysql -u root mysql
 ```
-## 6.Demo例子运行一切正常，但按这个例子自己做了一个新的，结果前端页面没有任何显示，但查看后台返回的3个API返回结果都正常
 
-- a. 这种一般是菜单定义的权限和前端代码里面的auth权限不一致导致的
-  ![7616e55dc512797055995cc091094e62.png](7616e55dc512797055995cc091094e62.png)
+### 12. 非 80 / 443 端口下，头像等图片文件资源不可用
 
-## 7.菜单开启缓存未生效
+- 参考 [NGINX 部署](/guide/installation-nginx) 中的
+  `proxy_set_header X-Forwarded-Host $host:$server_port;`（非标准端口时需打开该配置）。
 
-- a.菜单里面定义的组件名要和 前端里面定义的组件名一致
-  ![07.png](07.png)
+## 更多资料
 
-## 8.非默认的80，443端口，导致头像等图片文件资源无法使用
-- 参考文档 NGINX部署 ```#proxy_set_header X-Forwarded-Host $host:$server_port;  # 非默认的80，443端口，则需要打开该配置```
-
-## 9.菜单中，批量添加权限，后端视图找不到
-
-![img_4.png](img_4.png)
-
-- a.修改后端配置或代码之后，一定要重启后端的Django服务，然后刷新前端页面
-
-## 10.开发阶段，ws报错
-
-![img_3.png](img_3.png)
-
-- a.可能是server未开启debug， 将```config.yml```中```# DEBUG: true```修改为```DEBUG: true```
-
-## 11. 使用 Ubuntu 系统无法正常安装requirements.txt依赖
-
-- 可以参考server源码中 Dockerfile-base 文件中的依赖，或者手动执行命令
-  ```apt-get install libmariadb-dev gettext pkg-config make g++```
-
-## 12. windows下，提示如下
-
-```CommandError: Can't find msgfmt. Make sure you have GNU gettext tools 0.15 or newer installed.```
-
-![img_5.png](img_5.png)
-
-- 需要点击下载安装[gettext](https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.23-v1.17/gettext0.23-iconv1.17-shared-64.exe)，然后重启关闭编辑器打开即可
-
-## 13.菜单中，权限模型关联的时候，找不到对应的模型，在字段管理里面，搜不到该模型的角色权限
-
-- 该viewSet对应的serializer_class需要继承```BaseModelSerializer```，然后在前端执行下面两步
-  - 1.字段管理里面，重新生成字段数据，
-  - 2.菜单里面，重新生成对应权限
+- 生产部署与配置速查：[部署与运维手册](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/deployment.md)；
+- 故障处置步骤（服务起不来 / 任务积压 / 磁盘告警等）：[runbook](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/runbook.md)；
+- 备份 / 恢复 / 时间点恢复（PITR）：[pitr.md](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/pitr.md)；
+- 安装器命令与常见问题：[安装器 FAQ](/problem/installer)；
+- 开发期高频坑（静默失败类）：[dev-pitfalls](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/dev-pitfalls.md)。

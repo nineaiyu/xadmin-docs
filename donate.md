@@ -10,7 +10,7 @@
 
 | 微信                                                                                     | 支付宝                                                                                     |
 |----------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------|
-| <img src="http://qiniu.cdn.xadmin.dvcloud.xin/pay/wxpay.jpg" height="188" width="188"> | <img src="http://qiniu.cdn.xadmin.dvcloud.xin/pay/alipay.jpg" height="188" width="188"> |
+| <img src="https://qiniu.cdn.xadmin.dvcloud.xin/pay/wxpay.jpg" height="188" width="188"> | <img src="https://qiniu.cdn.xadmin.dvcloud.xin/pay/alipay.jpg" height="188" width="188"> |
 
 ## 捐赠者权益
 
