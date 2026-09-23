@@ -131,10 +131,12 @@ dnf install MariaDB-devel -y
 ```
 
 ```shell
-source /data/xadmin/py313/bin/activate
-pip install --upgrade pip
 cd /data/xadmin/xadmin-server
-pip install -r requirements.txt -r requirements-dev.txt   # 开发环境；仅部署运行用 requirements.txt
+uv sync --all-groups        # 推荐（以 uv.lock 为准）：开发环境；仅部署运行用 uv sync --locked --no-dev
+# 无 uv 环境（pip 路径，安装 uv export 产物）：
+# source /data/xadmin/py313/bin/activate
+# pip install --upgrade pip
+# pip install -r requirements.txt -r requirements-dev.txt
 ```
 
 ## 7.0 修改 server 配置文件

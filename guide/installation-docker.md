@@ -111,7 +111,7 @@ cd /data/xadmin/
 git clone https://github.com/nineaiyu/xadmin-server.git
 ```
 
-### ⚠️（当requirements.txt）变动的时候，需要执行该构建命令
+### ⚠️（当 pyproject.toml / uv.lock）变动的时候，需要执行该构建命令
 
 ```shell
 cd /data/xadmin/xadmin-server/

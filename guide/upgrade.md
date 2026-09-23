@@ -89,7 +89,7 @@ cp <配置备份文件> /opt/xadmin/config/config.txt
 ```bash
 cd /data/xadmin/xadmin-server
 git pull
-docker compose build          # requirements.txt 有变更时
+docker compose build          # pyproject.toml / uv.lock 有变更时
 docker compose up -d          # 重建并启动
 docker exec -i xadmin-server python manage.py post_upgrade   # 幂等：种子/语言包/缓存/权限扫描
 ```

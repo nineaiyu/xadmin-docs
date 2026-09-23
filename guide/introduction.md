@@ -17,7 +17,8 @@
 ├── mfa                         # 多因素认证应用
 ├── message                     # websocket 消息
 ├── notifications               # 站内信，消息通知推送应用
-├── requirements.txt            # Django 运行依赖（开发另加 requirements-dev.txt）
+├── pyproject.toml              # 依赖事实源 + uv.lock（锁文件，容器与 CI 据此安装）
+├── requirements.txt            # uv export 产物（安全扫描 / 手工安装用，勿手工编辑）
 ├── scripts                     # 门禁 / 自检脚本
 ├── server                      # 项目主应用（settings / urls / asgi）
 ├── settings                    # 系统设置应用

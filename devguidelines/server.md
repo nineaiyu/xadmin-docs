@@ -7,7 +7,7 @@
 - [Windows 资源限制](https://learn.microsoft.com/zh-cn/windows/wsl/wsl-config#configure-global-options-with-wslconfig)
 
 # ！！！ 注意
-每当依赖(requirements.txt或Python版本)有更新，必须在xadmin-server项目目录下，执行构建容器镜像命令``` docker compose build```
+每当依赖(pyproject.toml / uv.lock 或Python版本)有更新，必须在xadmin-server项目目录下，执行构建容器镜像命令``` docker compose build```
 
 ## Pycharm 配置开发
 
