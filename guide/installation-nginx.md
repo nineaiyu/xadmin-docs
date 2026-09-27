@@ -59,14 +59,17 @@ server {
     root /data/xadmin/xadmin-client/dist/;
     index index.html index.htm;
 
-    # 资源服务直接通过nginx访问，减少服务端压力
+    # 媒体文件：经应用鉴权（Cookie JWT / session），不存在匿名直链；
+    # 后端返回 X-Accel-Redirect 时由下面 internal 位置零拷贝直出
     location ^~ /media/ {
-        alias /data/xadmin/xadmin-server/data/upload/;
-        try_files $uri $uri/ @media;
+        include conf.d/xadmin-api-conf;
     }
 
-    location @media {
-        include conf.d/xadmin-api-conf;
+    # 受保护媒体内部位置：仅 X-Accel-Redirect 内部重定向可达（外部 404）；
+    # 前缀与后端 MEDIA_X_ACCEL_PREFIX 一致（生产建议配置 /_protected_media）
+    location ^~ /_protected_media/ {
+        internal;
+        alias /data/xadmin/xadmin-server/data/upload/;
     }
 
     # api 服务
