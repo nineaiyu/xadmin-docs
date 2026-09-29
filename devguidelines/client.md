@@ -1,6 +1,6 @@
 # 客户端开发不限平台
 
-> 环境要求以仓库为准：Node **≥ 22.22.1**（`.nvmrc` 为 v24）、pnpm **≥ 11**；完整步骤与门禁清单见
+> 环境要求以仓库为准：Node **≥ 24**（`.nvmrc` 为 v24.20.0）、pnpm **≥ 11**；完整步骤与门禁清单见
 > [xadmin-client README](https://github.com/nineaiyu/xadmin-client/blob/dev/README.md)。
 
 ## 1.客户端 WebStorm 配置使用

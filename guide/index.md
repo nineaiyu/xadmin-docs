@@ -12,7 +12,7 @@ xadmin 是基于 Django 6.0 + Vue 3 + Element Plus 的前后端分离全栈管�
 
 ![GitHub license](https://img.shields.io/github/license/nineaiyu/xadmin-server?style=flat)
 [![img](https://img.shields.io/badge/python->=3.14-green.svg)](https://python.org/)
-[![img](https://img.shields.io/badge/node->=22.22.1-brightgreen)](https://nodejs.org/zh-cn/)
+[![img](https://img.shields.io/badge/node->=24-brightgreen)](https://nodejs.org/zh-cn/)
 [![PyPI - Django Version badge](https://img.shields.io/badge/django:versions-6.0.8-blue)](https://docs.djangoproject.com/zh-hans/6.0/)
 [![img](https://img.shields.io/badge/vue3-brightgreen)](https://nodejs.org/zh-cn/)
 [![element-plus](https://img.shields.io/badge/element%20plus-409eff.svg)](https://element-plus.org/)
