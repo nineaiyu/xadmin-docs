@@ -2,12 +2,12 @@
 
 ## xadmin-server 安装部署
 
-xadmin-server 是基于 Python 环境开发，建议使用 Python 3.13+ 进行安装部署
+xadmin-server 是基于 Python 环境开发，建议使用 Python 3.14+ 进行安装部署
 
 ## 环境依赖
 
 ```
-python >=3.13
+python >=3.14
 nodejs >=22
 redis >=6
 mariadb > 10.5 或 mysql > 8.0 | postgresql 17
@@ -28,7 +28,7 @@ mariadb > 10.5 或 mysql > 8.0 | postgresql 17
 ## 1.Python环境安装
 
 ```shell
-dnf install python3.13 python3.13-devel -y
+dnf install python3.14 python3.14-devel -y
 ```
 
 ## 2.1安装postgresql依赖环境  [mysql和postgresql 二选一，默认postgresql]
@@ -110,7 +110,7 @@ systemctl restart redis
 ```shell
 mkdir -pv /data/xadmin/
 cd /data/xadmin/
-python3.13 -m venv py313
+python3.14 -m venv py314
 ```
 
 ## 5.克隆后端代码到本地
@@ -134,7 +134,7 @@ dnf install MariaDB-devel -y
 cd /data/xadmin/xadmin-server
 uv sync --all-groups        # 推荐（以 uv.lock 为准）：开发环境；仅部署运行用 uv sync --locked --no-dev
 # 无 uv 环境（pip 路径，安装 uv export 产物）：
-# source /data/xadmin/py313/bin/activate
+# source /data/xadmin/py314/bin/activate
 # pip install --upgrade pip
 # pip install -r requirements.txt -r requirements-dev.txt
 ```

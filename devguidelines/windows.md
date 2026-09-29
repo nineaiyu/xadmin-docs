@@ -96,7 +96,7 @@ systemd=true
 
 ```shell
 add-apt-repository ppa:deadsnakes/ppa -y
-apt install python3.13 python3.13-venv python3.13-dev pkg-config libmariadb-dev gettext curl make g++ -y
+apt install python3.14 python3.14-venv python3.14-dev pkg-config libmariadb-dev gettext curl make g++ -y
 ```
 
 ## 6.创建虚拟环境，使用普通用户，上面的操作都是root用户
@@ -104,7 +104,7 @@ apt install python3.13 python3.13-venv python3.13-dev pkg-config libmariadb-dev 
 ```shell
 exit # 退出root用户
 cd   # 切换到家目录
-python3.13 -m venv py313
+python3.14 -m venv py314
 ```
 
 #### 切记，上面的操作都在Windows的子系统中操作，下面的操作在编辑器中操作
@@ -134,11 +134,11 @@ wsl -d Ubuntu
 
 ```shell
 cd
-source py313/bin/activate
+source py314/bin/activate
 cd /mnt/w/sources/xadmin-server/
 ```
 
-## 9.生成数据表并迁移【server中所需的Python3.13.2环境和依赖自行安装】
+## 9.生成数据表并迁移【server中所需的Python3.14环境和依赖自行安装】
 
 ```shell
 python manage.py makemigrations

@@ -190,7 +190,7 @@ DB_PASSWORD: KGzKjZpWBp4R4RSa
 
 ## 4.本地部署直接重启生效
 ```shell
-source /data/xadmin/py313/bin/activate
+source /data/xadmin/py314/bin/activate
 cd /data/xadmin/xadmin-server/
 python manage.py restart all -d
 ```

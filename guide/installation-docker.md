@@ -2,12 +2,12 @@
 
 ## xadmin-server 安装部署
 
-xadmin-server 是基于Python环境开发，建议使用 ```Python3.13``` 进行安装部署
+xadmin-server 是基于Python环境开发，建议使用 ```Python3.14``` 进行安装部署
 
 ## 环境依赖
 
 ```
-python >=3.13
+python >=3.14
 nodejs >=22
 redis >=6
 mariadb > 10.5 或 mysql > 8.0 | postgresql 17
