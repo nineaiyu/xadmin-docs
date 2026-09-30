@@ -97,7 +97,7 @@ exit
 ## 3.安装启动Redis，并设置所需密码和hosts解析
 
 ```shell
-dnf module switch-to redis:7 -y
+dnf module switch-to redis:8 -y
 dnf install redis -y
 echo -e '\nrequirepass nineven' >> /etc/redis/redis.conf   # 用于添加redis密码
 echo -e '\n127.0.0.1 redis' >> /etc/hosts   # 用于添加redis本地解析
