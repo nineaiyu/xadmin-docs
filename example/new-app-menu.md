@@ -30,7 +30,7 @@
 - 自定义 action 同理，如任务中心的 `stats:SystemExportRecord`、审批的
   `pendingCount:SystemApprovalRequest`、角色的 `preview:SystemRole`。
 
-后端登录后经 `system/views/routes.py` 的 `get_auths()` 把当前用户拥有的权限码数组随路由
+后端登录后经 `system/views/user/routes.py` 的 `get_auths()` 把当前用户拥有的权限码数组随路由
 下发给前端（`permissionAuths`），前端 `hasAuth("list:SystemUser")` 即时判断。
 
 ### `path` + `method` —— 接口路径鉴权
