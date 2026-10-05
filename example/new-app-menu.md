@@ -26,7 +26,7 @@
 - 动作与 DRF action 对齐：`list` / `create` / `update` / `partialUpdate` / `destroy` /
   `retrieve` / `batchDestroy` / `exportData` / `importData` / `recycleList` / `upload`；
 - 组件名 = 前端页面组件的 `name`（如 `SystemUser`、`SystemRole`），框架按组件名自动匹配
-  （`getDefaultAuths(instance)` 会生成该页面全部动作的权限 map）；
+  （`usePageAuth()` 会生成该页面全部动作的权限 map）；
 - 自定义 action 同理，如任务中心的 `stats:SystemExportRecord`、审批的
   `pendingCount:SystemApprovalRequest`、角色的 `preview:SystemRole`。
 

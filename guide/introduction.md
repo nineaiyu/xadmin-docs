@@ -163,7 +163,7 @@ XADMIN_APPS:
 | 参数 | 说明 |
 |---|---|
 | `api` | BaseApi 实例（如 `new BaseApi("/api/demo/book")`），列表查询与增删改查 / 导入导出都走它 |
-| `auth` | 权限对象（`getDefaultAuths` 生成，键与后端权限动作对应），控制页面 / 按钮显隐 |
+| `auth` | 权限对象（`usePageAuth` 生成，键与后端权限动作对应），控制页面 / 按钮显隐 |
 | `localeName` | 国际化前缀（对应前端 `locales/zh-CN.yaml` 下的节点） |
 | `listColumnsFormat` / `searchColumnsFormat` / `detailColumnsFormat` | 列装配出口（在框架默认渲染之后执行，可覆盖渲染器 / 宽度 / valueType） |
 | `addOrEditOptions` | 新增 / 编辑弹窗配置（可重写列组件，如 autocomplete） |

@@ -57,8 +57,8 @@ export { bookApi };
 
 ```tsx
 import { bookApi } from "./api";
-import {getCurrentInstance, h, reactive, type Ref, shallowRef} from "vue";
-import {getDefaultAuths} from "@/router/utils";
+import {h, reactive, type Ref, shallowRef} from "vue";
+import {usePageAuth} from "@/router/utils";
 import type {
     OperationProps,
     PageColumn,
@@ -76,10 +76,7 @@ import {ElTag} from "element-plus";
 export function useDemoBook(tableRef: Ref) {
     // 权限判断，用于判断是否有该权限
     const api = reactive(bookApi);
-    const auth = reactive({
-        push: false,
-        ...getDefaultAuths(getCurrentInstance(), ["push"])
-    });
+    const auth = usePageAuth(["push"]);
     const {t} = useI18n();
 
     /**

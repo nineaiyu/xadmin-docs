@@ -21,7 +21,7 @@
 
 - **页面级**：权限由后端菜单下发——没有权限就没有路由（前端不需要写判断）；
 - **按钮级**：`hasAuth("动作:组件名")` 或 `<Auth value="...">`（**没有 `v-auth` 指令**）；
-- **RePlusPage 页面**：`getDefaultAuths(instance, [...自定义动作])` 一次生成 `auth` 对象传入 `:auth`；
+- **RePlusPage 页面**：`usePageAuth([...自定义动作])` 一次生成 `auth` 对象传入 `:auth`；
 - **组件名**：取自 `defineOptions({ name })`，与后端权限码的 `:` 后半段必须**一字不差**。
 
 ## 三、后端怎么用
