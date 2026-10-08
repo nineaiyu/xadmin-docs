@@ -194,5 +194,5 @@ const { api, auth } = useDemoBook(tableRef);
 > 以真源 `types.ts` 为准；逐层用法见 [前端教程](/example/new-app-client)，组件职责与扩展点见
 > 服务端组件手册（[component-handbook](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/architecture/component-handbook.md)）。
 >
-> 后端配合：`common/core/` 提供 `BaseModelSet` / `BaseModelSerializer` 与元数据接口（`search-columns` /
+> 后端配合：框架内核 `common/core/`（源码在 `packages/xadmin-common/common/core/`）提供 `BaseModelSet` / `BaseModelSerializer` 与元数据接口（`search-columns` /
 > `search-fields`），页面列与搜索项由后端元数据驱动（见服务端文档中心 `docs/README.md`）。
