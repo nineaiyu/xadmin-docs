@@ -57,7 +57,7 @@ pytest --cov --cov-fail-under=85   # 覆盖率门禁（CI test.yml 同款）
 
 ```ts
 // src/utils/taskCenter.spec.ts 风格
-vi.mock("@/api/system/task", () => ({ taskExecutionApi: { stats: vi.fn() } }));
+vi.mock("@/api/task/task", () => ({ taskExecutionApi: { stats: vi.fn() } }));
 ```
 
 组件/生命周期类测试用 `@vue/test-utils` 挂载（见 `src/utils/approvalBadge.spec.ts`）。

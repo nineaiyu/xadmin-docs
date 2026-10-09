@@ -35,7 +35,7 @@
 
 ### `path` + `method` —— 接口路径鉴权
 
-PERMISSION 类型的 `path` 填**接口路径正则**（如 `api/system/user$`），`method` 填 HTTP 方法
+PERMISSION 类型的 `path` 填**接口路径正则**（如 `api/identity/user$`），`method` 填 HTTP 方法
 （GET/POST/...）。菜单路径级 API 鉴权据此判定：用户请求了未授权的接口路径会被拒绝——
 这是前端隐藏之外的**后端兜底**。
 
