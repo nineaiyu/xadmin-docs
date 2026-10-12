@@ -133,6 +133,26 @@ export default defineConfig({
                     }
                 ]
             },{
+                text: '组件库',
+                items: [
+                    {
+                        text: '组件库总览',
+                        link: '/components/'
+                    },
+                    {
+                        text: '页面容器与数据展示',
+                        link: '/components/containers'
+                    },
+                    {
+                        text: '表单、输入与弹层',
+                        link: '/components/forms'
+                    },
+                    {
+                        text: 'AI 与聊天域组件',
+                        link: '/components/ai-chat'
+                    }
+                ]
+            },{
                 text: '常见问题',
                 items: [
                     {
