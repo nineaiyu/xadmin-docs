@@ -17,7 +17,7 @@
 ### 2. 后端 API 已启动，却无法正常访问
 
 - 避免使用 80 / 8080 / 8000 等常见端口（易与本机其它服务冲突），默认用 `8896`；
-- 确认数据库与 Redis 已就绪（本地开发可 `bash utils/dev_up.sh --backend-only` 一键起依赖）。
+- 确认数据库与 Redis 已就绪（本地开发可 `bash ops/dev_up.sh --backend-only` 一键起依赖）。
 
 ### 3. Ubuntu 无法正常安装 requirements.txt 依赖
 

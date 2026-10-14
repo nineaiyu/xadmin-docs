@@ -24,7 +24,7 @@
 ├── settings                    # 系统设置应用
 ├── system                      # 系统应用，包含用户，菜单，日志，角色等
 ├── tests                       # 测试（unit / integration）
-└── utils                       # 一键启动与初始化脚本（dev_up.sh / init_data.py）
+└── ops                         # 一键启动与初始化脚本（dev_up.sh / init_data.py）
 
 ```
 

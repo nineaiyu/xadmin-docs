@@ -1,7 +1,7 @@
 ## Demo 快速部署体验
 
 > 在**开发机**上想几分钟看到完整系统？见[快速体验（一键启动）](./quick-start.md)——一条
-> `bash utils/dev_up.sh --with-demo` 起全栈并灌演示数据。
+> `bash ops/dev_up.sh --with-demo` 起全栈并灌演示数据。
 > 本文是**生产服务器**上的一键部署（xadmin-installer）。
 
 准备一台 2核4G（最低）且可以访问互联网的 64 位 Linux 主机；
@@ -9,7 +9,7 @@
 以 root 用户执行如下命令一键安装
 
 ```shell
-VERSION=v4.2.5
+VERSION=v5.0.0
 curl -sSL https://github.com/nineaiyu/xadmin-server/releases/download/${VERSION}/quick_start.sh |bash
 ```
 

@@ -43,7 +43,7 @@ SECRET_KEY: django-insecure-mlq6(#a^2vk!1=7=xhp#$i=o5d%namfs=+b26$m#sh_2rco7j^
 
 > 现状提示：开发环境**没有 config.yml 也能启动**——框架会回落读取 `config_example.yml` 并自动生成
 > `SECRET_KEY`（持久化到 `data/.secret_key`）；生产环境仍必须显式配置（多实例一致 + 已加密数据可解）。
-> 直接使用仓库提供的 `bash utils/dev_up.sh` 一键启动时，本节可跳过。
+> 直接使用仓库提供的 `bash ops/dev_up.sh` 一键启动时，本节可跳过。
 
 ## 1.创建 django app
 

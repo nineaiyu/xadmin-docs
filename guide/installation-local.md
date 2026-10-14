@@ -173,7 +173,7 @@ python manage.py download_ip_db -f
 ## 8.初始化数据：创建管理员 + 导入默认菜单/权限/角色等（仅新部署执行一次；幂等，操作之前必须配置好 Redis 和数据库）
 
 ```shell
-python utils/init_data.py
+python ops/init_data.py
 # 自动：migrate + 创建超管（默认 xadmin，随机密码仅打印一次，可用 XADMIN_ADMIN_PASSWORD=xxx 指定）+ 导入默认种子（菜单/权限/角色/配置）
 ```
 

@@ -12,14 +12,14 @@
 
 ```bash
 cd xadmin-server
-bash utils/dev_up.sh --with-demo   # 启动后端全栈 + 幂等初始化 + 演示数据 + 前端 dev server
+bash ops/dev_up.sh --with-demo   # 启动后端全栈 + 幂等初始化 + 演示数据 + 前端 dev server
 ```
 
 启动流程（幂等，可重复执行）：
 
 1. `docker compose up -d` 起后端全栈（nginx / postgresql / redis / server / celery / beat / 备份容器）；
    **首次运行会自动构建镜像，需要数分钟**；
-2. 等待健康检查（`/api/common/api/health`）通过，自动执行 `python utils/init_data.py`
+2. 等待健康检查（`/api/common/api/health`）通过，自动执行 `python ops/init_data.py`
    （migrate + 创建超管 + 导入默认种子）；
 3. 追加执行 `doctor` 环境自检（八项检查，失败不阻塞启动，按输出中的修复命令处理）；
 4. 存在 `../xadmin-client` 时自动 `pnpm install`（首次）并启动前端 dev server。
@@ -47,12 +47,12 @@ docker exec -it xadmin-server python manage.py changepassword xadmin
 - `--with-demo`：初始化后追加演示数据（组织 / 审批 / 表单 / 聊天 / 知识库等，约 1-2 分钟）；
   手动补装 `python manage.py seed_demo_all`，一键卸载 `python manage.py seed_demo_clean`；
 - 不需要演示数据：去掉 `--with-demo`；
-- 只要后端（前端本地另起）：`bash utils/dev_up.sh --backend-only`。
+- 只要后端（前端本地另起）：`bash ops/dev_up.sh --backend-only`。
 
 ## 停止与清理
 
 ```bash
-bash utils/dev_down.sh    # 停止全部容器（数据保留；下次 dev_up.sh 数秒恢复）
+bash ops/dev_down.sh    # 停止全部容器（数据保留；下次 dev_up.sh 数秒恢复）
 
 # 彻底清理（含数据库/媒体数据，谨慎执行）：
 cd xadmin-server && docker compose down -v

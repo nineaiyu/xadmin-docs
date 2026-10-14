@@ -150,7 +150,7 @@ docker exec -it xadmin-server bash
 ```
 
 ```shell
-python utils/init_data.py
+python ops/init_data.py
 # 幂等：自动完成 migrate + 创建超管 xadmin（随机密码仅打印一次）+ 导入默认菜单/权限/角色；可用 XADMIN_ADMIN_PASSWORD=xxx 指定初始密码
 ```
 上面命令执行完成后，退出容器
