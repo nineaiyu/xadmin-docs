@@ -9,7 +9,7 @@
 以 root 用户执行如下命令一键安装
 
 ```shell
-VERSION=v5.0.0
+VERSION=v5.0.1
 curl -sSL https://github.com/nineaiyu/xadmin-server/releases/download/${VERSION}/quick_start.sh |bash
 ```
 
