@@ -35,4 +35,4 @@ curl -sSL https://github.com/nineaiyu/xadmin-server/releases/download/${VERSION}
 ./xadmin.sh tail server                # 查看日志
 ```
 
-升级与回滚见[版本升级与回滚](./upgrade.md)；更多安装器问题见[安装器 FAQ](/problem/installer)。
+升级见[安装器升级（自动）](./upgrade-installer.md)、[手动升级](./upgrade-manual.md) 与[版本升级总览](./upgrade.md)；更多安装器问题见[安装器 FAQ](/problem/installer)。

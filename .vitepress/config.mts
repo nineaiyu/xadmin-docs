@@ -66,8 +66,16 @@ export default defineConfig({
                         link: '/guide/installation-mariadb'
                     },
                     {
-                        text: '版本升级与回滚',
+                        text: '版本升级与回滚（总览）',
                         link: '/guide/upgrade'
+                    },
+                    {
+                        text: '升级 · 安装器（自动）',
+                        link: '/guide/upgrade-installer'
+                    },
+                    {
+                        text: '升级 · 手动（compose / 源码）',
+                        link: '/guide/upgrade-manual'
                     },
                 ]
             },
