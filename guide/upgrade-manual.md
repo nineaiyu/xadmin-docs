@@ -8,8 +8,8 @@
 >
 > | 你的库 | 升级方式 | 本章节 |
 > |--------|----------|--------|
-> | 5.x 之间的库，或「按域分表之后」的 4.x 库 | 原地升级（换代码 + 迁移） | [一、原地升级](#一原地升级) |
-> | 更早的 4.x 库（表名还是 `system_userinfo` 等） | **清库重建 + 数据回灌** | [二、4.x → 5.x：清库重建 + 回灌](#二4x--5x清库重建--数据回灌) |
+> | 5.x 之间的库，或「按域分表之后」的 4.x 库 | 原地升级（换代码 + 迁移） | [一、原地升级](#一、原地升级) |
+> | 更早的 4.x 库（表名还是 `system_userinfo` 等） | **原地升级（推荐）**，判阻断时清库重建 + 回灌 | [二、4.x → 5.x：原地升级](#二、4-x-→-5-x-原地升级-推荐-清库重建-回灌-兜底) |
 
 ## 一、原地升级
 
@@ -60,11 +60,62 @@ docker exec -i xadmin-postgresql pg_restore -U <DB_USER> -d <DB_DATABASE> \
 
 Redis 7.4 → 8.10 的数据目录兼容，无需处置；数据量很大时可改用 `pg_upgrade` 原地升级。
 
-## 二、4.x → 5.x：清库重建 + 回灌
+## 二、4.x → 5.x：原地升级（推荐）/ 清库重建 + 回灌（兜底）
 
 5.0 起按域划分了表名（用户 / 文件 / 日志 / 任务分别落到 `identity_*` / `file_*` / `audit_*` /
-`task_*`），**更早的 4.x 库**（表名仍是 `system_userinfo` / `system_uploadfile` …）无法原地升级
-——账本认领只写迁移记录，既不会重命名表也不会补列。官方路径是：
+`task_*`），**更早的 4.x 库**（表名仍是 `system_userinfo` / `system_uploadfile` …）结构不同。
+
+**2026-10 起支持原地升级**：在同一个库里对齐结构（表改名 / 补列 / 补表 / 内容类型与存量引用重指 /
+迁移账本重写），**数据、主键、UUID、附件与二开表全部保留**，不需要清库重建；PostgreSQL 16 → 17 的
+数据目录由安装器自动迁移。
+
+### 原地升级（安装器一键，已验证）
+
+```bash
+# 1) 预检（只读）：结论必须是 legacy-inplace-capable
+cd /opt/xa-installer-5x
+docker run --rm --network xadmin_net --env-file /opt/xadmin/config/config.txt \
+  -e ALLOWED_HOSTS='["<本机IP>","127.0.0.1"]' \
+  --entrypoint python registry.cn-beijing.aliyuncs.com/nineaiyu/xadmin-server:5.0.1 \
+  -c "import os,sys; sys.path.insert(0,'/data/xadmin-server'); os.chdir('/data/xadmin-server'); \
+      os.environ.setdefault('DJANGO_SETTINGS_MODULE','server.settings'); import django; django.setup(); \
+      from django.core.management import call_command; call_command('upgrade_check', tag='v4.2.5')"
+
+# 2) 备份（安装器也会自动备份，这里是双保险）
+docker exec xadmin-postgresql pg_dump -U postgres -Fc -f /tmp/pre.dump xadmin
+docker cp xadmin-postgresql:/tmp/pre.dump /root/xa-pre-$(date +%F).dump
+
+# 3) 一条命令完成升级（判定 → 预演 → 执行 → 复检 → 账本 → migrate → 收尾）
+INPLACE_ALIGN=1 ./xadmin.sh upgrade 5.0.1
+
+# 4) 启动与验收
+./xadmin.sh start
+docker exec xadmin-server python manage.py upgrade_check   # 期望 up-to-date
+```
+
+非安装器部署可用手工三步（都在 5.x 的 server 容器内执行）：
+
+```bash
+python manage.py legacy_align --tag v4.2.5           # 预演（只读）
+python manage.py legacy_align --tag v4.2.5 --apply   # 执行（单事务）
+python manage.py upgrade_ledger --apply && python manage.py migrate && python manage.py post_upgrade
+```
+
+**验收**：`upgrade_check` = `up-to-date`；5 个容器 healthy、首页 200；用户/部门/角色/公告/附件/日志
+行数与升级前一致；二开表行数与关联不变（外键自动指向新表名）。
+
+::: warning 升级后「有菜单、没有列」
+5.x 的列表列由接口下发并按**字段权限**裁剪（未配置 = 零字段）。升级收尾的 `post_upgrade` 会自动补
+「权限菜单 → 模型」绑定与字段白名单并清缓存；若仍无列，手工再跑一次 `docker exec xadmin-server
+python manage.py post_upgrade`。另外 5.x 的菜单/字段权限**按角色**生效——**没有任何角色的账号**
+（4.x 里常见）升级后拿不到字段与菜单，需要绑定角色或使用超管。
+:::
+
+### 兜底路径：清库重建 + 回灌
+
+原地升级被判**阻断**（体检输出 `legacy-chain-pre-split` 且列了阻断项）、或结构已被人为破坏时，才走
+下面的重建路径。注意它对二开不友好：二开 app 的旧迁移引用需人工改写、二开表物理文件不随库搬运，
+审批/表单/数据集/日志/任务/PAT 等也不在回灌范围内。
 
 **备份 → 清库重建 → 导出/回灌 → 验收**。
 
@@ -212,7 +263,7 @@ python ops/legacy_export.py --dsn "postgresql://..." --output /tmp/xadmin-legacy
 | 用旧密码登录失败 | 确认导出包含 `users` 实体、回灌后未改过该账号密码；PBKDF2 / argon2 哈希都支持 |
 | 回灌提示「加密设置 N 项未搬运取值」 | 这类设置的密文由旧库 `SECRET_KEY` 签发，换库后无法解密；记录本身已建（含分类与开关），请在设置页重新填写取值。若沿用相同 `SECRET_KEY`，也可选择不删除旧值后手工核对 |
 | 数据都在但 ID / 时间戳变了 | 预期：库重建后主键与时间戳由新库生成，按自然键核对 |
-| 想要「原地升级」并保留原 UUID / 时间戳 | 需要额外的跨版本数据搬迁迁移（表重命名 + 补列 + 逐表映射），当前未提供 |
+| 想要「原地升级」并保留原 UUID / 时间戳 | **已具备**：服务端 `docs/plans/原地升级立项与方案-2026.10.md`（决策 `docs/adr/ADR-094-inplace-upgrade-for-legacy-libraries.md`）用「同库结构对齐」替代清库重建——表改名 / 补列 / 补表 / 内容类型与存量引用重指 / 账本重写，数据、主键、附件与二开表都保留；安装器已接线（体检判 `legacy-inplace-capable` 时先预演再执行），也可手动跑 `python manage.py legacy_align --dsn "<旧库连接串>" --tag <旧版本 tag>` 看预演。二开 app 的旧引用用 `python manage.py legacy_rewrite_app_refs --app-path <你的 app> --tag <旧版本 tag>` 改写。**升级前务必备份**；真实客户库建议先看体检判定与阻断项 |
 
 > 服务端权威细节（判定实现、迁移账本、回灌工具的字段映射）见
 > [docs/ops/upgrade-stock.md](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/upgrade-stock.md)

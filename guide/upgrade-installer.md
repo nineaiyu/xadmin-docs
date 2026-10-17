@@ -10,7 +10,7 @@
 
 1. **拿到新版本安装包**：解压后在原安装目录执行（升级脚本读当前目录的 `static.env` 与 `compose/`）；
 2. **确认版本门槛**：当前版本需 ≥ `v4.2.5`（更早的库需走
-   [清库重建 + 回灌](./upgrade-manual.md#二4x--5x清库重建--数据回灌)）；
+   [清库重建 + 回灌](./upgrade-manual.md#二、4-x-→-5-x-原地升级-推荐-清库重建-回灌-兜底)）；
 3. **留出窗口**：迁移期间短暂停服；
 4. 建议先看该版本 Release Notes / [升级到 5.0](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/upgrade-5.0.md)
    的变更核对项。
@@ -34,7 +34,7 @@
 | 3 | **数据库备份** | 产物在 `${VOLUME_DIR}/db_backup/`；**备份失败不要跳过** |
 | 4 | **配置备份** | 路径打印在终端：`${VOLUME_DIR}/db_backup/config-<旧版本>-<时间>.conf` |
 | 5 | **PostgreSQL 大版本迁移**（按需） | 见第三节：数据目录 16 → 17 时自动导出 / 重建 / 恢复 |
-| 6 | **迁移前体检与账本认领** | 先 `upgrade_check` 判定库能否原地升级，再由 `upgrade_ledger --apply` 认领迁移账本（只写迁移记录、不执行 DDL），随后执行 `migrate` |
+| 6 | **迁移前体检 → 原地对齐（按需）→ 账本认领** | 先 `upgrade_check` 判定；若结论是 `legacy-inplace-capable`（按域分表之前的旧库但结构可自动对齐），脚本打印**完整预演**并询问是否执行原地对齐（表改名 / 补列 / 补表 / 引用与账本重写；数据、主键、附件与二开表都保留）；随后 `upgrade_ledger --apply` 认领账本、执行 `migrate` |
 | 7 | **升级后收尾** | 自动执行 `post_upgrade`（账本 / API 前缀平移 / 种子 / 权限点 / 语言包 / 缓存，幂等） |
 | 8 | 旧镜像清理（可选）+ 完成提示 | 之后执行 `./xadmin.sh start` 启动，或让脚本直接启动 |
 
@@ -72,11 +72,23 @@
 |----------|----------|
 | `up-to-date` / `needs-migrate` | 直接继续 `migrate` |
 | `legacy-chain-reconcilable` | 自动先 `upgrade_ledger --apply` 认领账本，再 `migrate` |
-| `legacy-chain-pre-split` | **中止**：库停留在按域分表之前（表名仍是 `system_userinfo` 等），原地升级不可行 |
+| `legacy-inplace-capable` | **原地对齐**：库停留在按域分表之前（表名仍是 `system_userinfo` 等），但结构差异可自动对齐——脚本先打印预演，确认后执行对齐再 `migrate`（数据、主键、附件、二开表都保留） |
+| `legacy-chain-pre-split` | **中止**：结构差异**无法自动对齐**（有未登记映射的框架表 / 缺列），输出里会列出阻断项 |
 | `legacy-chain` / `schema-drift` | **中止**：迁移链路不匹配或表结构漂移，需人工排查 |
 
-`legacy-chain-pre-split` 的处置：先 `./xadmin.sh stop`，再按
-[手动升级 · 4.x → 5.x](./upgrade-manual.md#二4x--5x清库重建--数据回灌) 的
+**原地对齐怎么工作**：脚本内部先 `legacy_align --probe` 探询（退出码 `0` 需要对齐 / `1` 结构已一致 /
+`2` 有阻断项 / `3` 无法判定），需要时打印 `legacy_align` 的完整预演（改名哪些表、补哪些列、建哪些表、
+内容类型与存量引用重指、账本重写），确认后才执行。跳过对齐用 `SKIP_INPLACE_ALIGN=1`（此时仍是旧行为，
+对按域分表之前的库会失败）；无人值守（CI / 演练 / 灾备脚本）用 `INPLACE_ALIGN=1 ./xadmin.sh upgrade 5.0.1`
+直接执行，**不要用管道喂 `y`**——流程里的 `docker exec -i` 会先读走 stdin，答案会被吞掉。
+
+升级收尾的 `post_upgrade` 会自动补「权限菜单 → 模型」绑定、按接口自身模型补齐字段白名单并清缓存
+（只加不减），避免出现「有菜单、没有列」。另需注意：5.x 的菜单/字段权限按**角色**生效，**没有任何角色的
+账号**升级后拿不到字段与菜单，需要绑定角色或使用超管。
+
+`legacy-chain-pre-split` 的处置：先看输出里的**阻断项**——多数是「旧框架表没有被登记的映射」，
+可在服务端 `docs/plans/原地升级立项与方案-2026.10.md` 的映射目录登记后重跑；不便处理时按
+[手动升级 · 4.x → 5.x](./upgrade-manual.md#二、4-x-→-5-x-原地升级-推荐-清库重建-回灌-兜底) 的
 **备份 → 清库重建 → 导出/回灌 → 验收** 执行（导出脚本 `ops/legacy_export.py` 随新版本发布）。
 确需强行继续可设 `SKIP_UPGRADE_CHECK=1`，但会得到一个结构不完整的库，**不推荐**。
 

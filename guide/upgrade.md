@@ -7,7 +7,7 @@
 | 部署方式 | 库的情况 | 升级方式 | 详细步骤 |
 |----------|----------|----------|----------|
 | 安装器一键部署 | 5.x，或**按域分表之后**的 4.x 库 | 原地升级（脚本自动完成预检 / 备份 / 认领 / 迁移 / 收尾） | [安装器升级（自动）](./upgrade-installer.md) |
-| 安装器一键部署 | **更早的 4.x 库**（表名仍是 `system_userinfo` / `system_uploadfile` 等） | 备份 → 清库重建 → 导出 / 回灌 → 验收 | [手动升级 · 重建与回灌](./upgrade-manual.md#二4x--5x清库重建--数据回灌) |
+| 安装器一键部署 | **更早的 4.x 库**（表名仍是 `system_userinfo` / `system_uploadfile` 等） | **原地升级（推荐）**：备份 → `INPLACE_ALIGN=1 ./xadmin.sh upgrade 5.0.1` → 验收；体检判阻断时才走清库重建 + 回灌 | [手动升级 · 4.x → 5.x](./upgrade-manual.md#二、4-x-→-5-x-原地升级-推荐-清库重建-回灌-兜底) |
 | 手工 compose / 源码部署 | 任意 | 原地升级，或重建 + 回灌 | [手动升级（compose / 源码）](./upgrade-manual.md) |
 
 `upgrade_check` 的结论与对应动作：
@@ -46,7 +46,7 @@
    等价链的升级路径 = 体检（`upgrade_check`，预期 `legacy-chain-reconcilable`）→ 认领
    （`upgrade_ledger --apply`）→ `migrate`（预期 `No migrations to apply`）→ `post_upgrade`。
    安装器已把这几步串进 `./xadmin.sh upgrade`；更早版本的库按
-   [手动升级 · 重建与回灌](./upgrade-manual.md#二4x--5x清库重建--数据回灌) 执行。
+   [手动升级 · 重建与回灌](./upgrade-manual.md#二、4-x-→-5-x-原地升级-推荐-清库重建-回灌-兜底) 执行。
 2. **新增权限点**：`availableForms:FormMySubmission`、`resubmit:FormMySubmission`、
    `submit:FormMySubmission`、`urge:SystemApprovalInstance` 等已写入种子，`post_upgrade` 会补齐。
    - `available-forms` 与 list 权限同口径：存量角色未重新授权也能正常填报；

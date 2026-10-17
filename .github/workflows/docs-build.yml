@@ -32,6 +32,32 @@ jobs:
         # 站点构建门禁：死链 / 构建错误在此阻断（历史上 CI 只构建镜像，docs:build 失败长期无人发现）
         run: pnpm docs:build
 
+      - name: Checkout server (link / reference gate script)
+        uses: actions/checkout@v4
+        with:
+          repository: nineaiyu/xadmin-server
+          ref: dev
+          path: xadmin-server
+
+      - name: Checkout installer (scripts/*.sh 引用的归属仓)
+        uses: actions/checkout@v4
+        with:
+          repository: nineaiyu/xadmin-installer
+          ref: main
+          path: xadmin-installer
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Check site links and references
+        # 构建产物只拦页级死链：vitepress 不校验 #fragment（实测坏锚点 exit 0），
+        # 也没有事实源能发现口径漂移 —— 锚点与跨仓路径引用由脚本对产物核对
+        env:
+          XADMIN_DOCS_DIR: ${{ github.workspace }}
+        run: python xadmin-server/scripts/check_docs_site_links.py --require-dist
+
   doc-facts:
     name: Doc facts (cross-repo)
     runs-on: ubuntu-latest
@@ -56,6 +82,14 @@ jobs:
           ref: dev
           path: xadmin-client
 
+      - name: Checkout installer (upgrade baseline fact source)
+        # 站点与手册里的「版本门槛 vX.Y.Z」事实源 = 安装器 scripts/7_upgrade.sh 的 required_version
+        uses: actions/checkout@v4
+        with:
+          repository: nineaiyu/xadmin-installer
+          ref: main
+          path: xadmin-installer
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -67,6 +101,7 @@ jobs:
         env:
           XADMIN_DOCS_DIR: ${{ github.workspace }}/xadmin-docs
           XADMIN_CLIENT_DIR: ${{ github.workspace }}/xadmin-client
+          XADMIN_INSTALLER_DIR: ${{ github.workspace }}/xadmin-installer
         run: python xadmin-server/scripts/check_doc_facts.py
 
       - name: Check docs structure gates
