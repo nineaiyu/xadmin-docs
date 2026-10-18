@@ -17,7 +17,7 @@
 | §5 编写视图 | `<app>/views.py`（生成块） |
 | §6 新建 urls.py | `<app>/urls.py` |
 | §7 新建 config.py | `<app>/config.py` |
-| 菜单 / 权限码手工建（见 new-app-menu） | `loadjson/seed_<app>_<model>.json` + `loaddata` 装载 |
+| 菜单 / 权限码手工建（见 new-app-menu） | `<app>/seeds/menu.json` + `menumeta.json`（自动登记 `manifest.json`，`load_init_json --apps <app>` 装载） |
 | 前端页面手写（见 new-app-client） | `src/views/<app>/<model>/` 三件套（xadmin-client 仓库） |
 
 ## 0.创建并修改 server 配置文件

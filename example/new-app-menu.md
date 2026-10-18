@@ -78,16 +78,21 @@ MENU 类型填前端 `src/views/` 下的组件路径（不带扩展名），如 
 
 ## 4. 用种子文件批量注册（可选）
 
-生产种子放在 server 仓库 `loadjson/`（`menu.json` / `menumeta.json`），格式为
-`{model, pk, fields}` 的 Django fixture 风格 JSON。适合随版本分发一批固定菜单：
+种子按应用分层：**本应用的菜单与权限点放 `<app>/seeds/`**（`menu.json` / `menumeta.json`），
+平台共享的目录菜单与跨域页面才留在 server 仓库 `loadjson/`。文件格式为
+`{model, pk, fields}` 的 Django fixture 风格 JSON，同目录 `manifest.json` 声明
+`depends` / `url_prefixes` 与文件清单，`load_init_json` 按依赖拓扑顺序装载。
 
-> 单个模型的菜单种子也可由代码生成器直接产出：`python manage.py generate_crud <app>.<Model>`
-> 会写 `loadjson/seed_<app>_<model>.json`（meta + 页面菜单 + 权限码，pk 为 uuid5 确定性值，
-> 重复 `loaddata` 覆盖同一批行；权限码已关联模型）。见服务端 ADR-027。
+> 单个模型的菜单种子可由代码生成器直接产出：`python manage.py generate_crud <app>.<Model>`
+> 会写 `<app>/seeds/menu.json` + `menumeta.json`（meta + 页面菜单 + 权限码，pk 为 uuid5
+> 确定性值，重复 `loaddata` 覆盖同一批行；权限码已关联模型），并自动登记 `manifest.json`。
+> 已有库里的菜单也可直接按归属导出：`python manage.py dump_init_json --split-apps --apps <app>`。
+> 见服务端 ADR-027 / ADR-095。
 
 - `menumeta.json`：先建 `meta`（title/icon/rank/showLink），拿到 pk；
 - `menu.json`：`parent` 指向上级菜单 pk，`menu_type` 按三类型取值，PERMISSION 条目
   填 `name`/`path`/`method`/`model`；
+- 装载与自检：`python manage.py load_init_json --apps <app>`、`python manage.py load_init_json --check`；
 - 参考样例：种子中 `retrieve:SecurityRegisterAuth`（PERMISSION，path 为
   `api/settings/register/auth$`，method GET）与 `system/user/index`（MENU，component 指向
   前端页面）。

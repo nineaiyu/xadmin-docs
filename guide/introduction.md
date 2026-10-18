@@ -11,7 +11,8 @@
 ├── docker-compose.yml          # docker compose 运行文件
 ├── Dockerfile                  # 用于构建容器镜像文件
 ├── docs                        # 文档中心（二开必读见 docs/README.md）
-├── loadjson                    # 默认的菜单，权限，字段配置（种子）
+├── loadjson                    # 平台共享种子（目录菜单 / 平台级权限点 / 角色 / 配置）
+│                               # 各应用的菜单、权限点、字段权限在 <app>/seeds/（manifest.json 自声明）
 ├── locale                      # 国际化配置，支持中文和英语
 ├── manage.py
 ├── mfa                         # 多因素认证应用
