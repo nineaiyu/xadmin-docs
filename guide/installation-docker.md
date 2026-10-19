@@ -41,10 +41,9 @@ mariadb > 10.5 或 mysql > 8.0 | postgresql 17
 | 步骤 | 内容 | 小节 |
 |------|------|------|
 | 1 | 安装 Docker 与 compose 插件 | [一、安装 Docker](#一、安装-docker-已有-docker-可跳过) |
-| 2 | 克隆后端代码 + 构建镜像 | [二、部署 api 服务端](#二、部署-api-服务端) |
-| 3 | 修改配置（`config.yml` + `.env`） | 同上 |
-| 4 | 启动后端容器 + 初始化数据 | 同上 |
-| 5 | 部署前端（官方镜像 / 源码构建 / NGINX 三选一） | [三、前端部署](#三、前端部署) |
+| 2 | 克隆后端代码 + 一条命令生成配置 | [二、部署 api 服务端](#二、部署-api-服务端) |
+| 3 | 构建镜像 + 启动 + 初始化数据 | 同上 |
+| 4 | 部署前端（官方镜像 / 源码构建 / NGINX 三选一） | [三、前端部署](#三、前端部署) |
 
 ### docker 环境安装
 
@@ -134,78 +133,38 @@ cd xadmin-server
 git checkout <目标版本 tag>   # 建议锁定版本（如 v5.0.2）；省略则用默认分支最新代码
 ```
 
-### 2. 构建容器镜像
+### 2. 一条命令生成配置
 
 ```shell
-docker compose build
+bash ops/init_config.sh
 ```
 
-> ⚠️ 当 `pyproject.toml` / `uv.lock` 或 Python 版本有变动时，必须重新执行该命令；
-> 仅代码逻辑变化（源码是挂载进容器的）不需要重新构建，但需要重启进程才生效。
+脚本会自动完成（幂等，重复执行不会破坏已有配置）：
 
-### 3. 修改 server 配置文件
+- `config.yml` 缺失时从模板生成，`SECRET_KEY`、数据库密码、Redis 密码自动写入随机值
+  （想用自定义密码，先编辑好 `config.yml` 再跑一次——已有值不会被覆盖）；
+- 生成 compose 凭据缓存 `.env`（compose 启动的硬性要求），与 `config.yml` 保持一致。
 
-**3.1 应用配置 `config.yml`**（数据库 / Redis 连接与密钥的唯一定义处）：
+想自定义端口、数据库等配置：编辑 `config.yml` 后重跑一次即可，脚本只补空缺项。
+
+### 3. 构建镜像并启动
 
 ```shell
-cp config_example.yml config.yml
+docker compose build   # 首次必须；仅改代码（源码挂载进容器）可跳过，重启进程即可
+docker compose up -d   # 启动全栈（nginx / postgresql / redis / server / celery×3 / 备份）
 ```
 
-- a. 将 config.yml 里面的 `DB_PASSWORD`、`REDIS_PASSWORD` 取消注释并填值
+> ⚠️ 当 `pyproject.toml` / `uv.lock` 或 Python 版本有变动时，必须重新执行 `docker compose build`。
+
+### 4. 初始化数据（幂等；仅新部署执行一次，升级后重跑也安全）
 
 ```shell
-sed -i "s@^#DB_PASSWORD:@DB_PASSWORD:@" config.yml
-sed -i "s@^#REDIS_PASSWORD:@REDIS_PASSWORD:@" config.yml
+docker exec -i xadmin-server python ops/init_data.py
+# 自动：migrate + 创建超管 xadmin（随机密码仅打印一次，可用 XADMIN_ADMIN_PASSWORD=xxx 指定）
+#       + 导入默认菜单/权限/角色；如需演示数据追加 --with-demo
 ```
 
-- b. 生成并填写 `SECRET_KEY`（加密密钥；生产服必须保证唯一性与安全性，否则攻击者可以用它来生成自己的签名值）
-
-```shell
-sed -i "s@^SECRET_KEY.*@SECRET_KEY: $(cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49)@" config.yml
-```
-
-**3.2 compose 凭据 `.env`（必须，否则 `docker compose up` 直接报错拒启）**
-
-`docker-compose.yml` 里 PostgreSQL / Redis 的密码是**强制注入**的（`:?DB_PASSWORD is required`），
-compose 的变量插值读不了 YAML，所以除了 `config.yml` 还必须在同目录准备一份 `.env`
-（`KEY=VALUE` 格式），两个密码值与 `config.yml` 保持一致：
-
-```shell
-cat > .env <<EOF
-DB_PASSWORD=<与 config.yml 的 DB_PASSWORD 一致>
-REDIS_PASSWORD=<与 config.yml 的 REDIS_PASSWORD 一致>
-EOF
-chmod 600 .env
-```
-
-> 说明：仓库内的 `ops/dev_up.sh` 会自动维护这份 `.env`（视为派生缓存，勿手工编辑）；
-> 本节是**绕过脚本的手工部署**路径，所以需要自己创建。`.env` 已被 gitignore，不会被提交。
-
-### 4. 启动 api 服务
-
-```shell
-cd /data/xadmin/xadmin-server/
-docker compose up -d  # -d 参数是后台运行，如果去掉，则前台运行
-```
-
-### 5. 初始化数据：创建管理员 + 导入默认菜单/权限/角色等（仅新部署执行一次，幂等）
-
-```shell
-docker exec -it xadmin-server bash
-```
-
-```shell
-python ops/init_data.py
-# 幂等：自动完成 migrate + 创建超管 xadmin（随机密码仅打印一次）+ 导入默认菜单/权限/角色；可用 XADMIN_ADMIN_PASSWORD=xxx 指定初始密码
-```
-
-上面命令执行完成后，退出容器
-
-```shell
-exit
-```
-
-### 6. 验证后端
+### 5. 验证后端
 
 ```shell
 curl http://127.0.0.1:8896/api/common/api/health
@@ -220,6 +179,12 @@ docker compose logs -f server                                          # 查看�
 docker compose down                                                    # 停止全部容器（数据卷保留）
 ```
 
+> 手工步骤详解（想逐项控制配置时看这里）：`cp config_example.yml config.yml` 后取消注释
+> `DB_PASSWORD` / `REDIS_PASSWORD` 并填值、生成 `SECRET_KEY`
+> （`sed -i "s@^SECRET_KEY.*@SECRET_KEY: $(cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49)@" config.yml`），
+> 再创建 `.env`（`KEY=VALUE` 格式，`DB_PASSWORD` / `REDIS_PASSWORD` 两行与 `config.yml` 一致，
+> compose 变量插值读不了 YAML，缺 `.env` 会报错拒启）——以上即 `init_config.sh` 自动做的事。
+
 ## 三、前端部署
 
 前端是纯静态产物（`xadmin-client` 构建出的 `dist/`），托管 + 反代三选一：
@@ -230,7 +195,7 @@ docker compose down                                                    # 停止�
 | 方式 B：本地构建 web 栈 | 需要修改 nginx 配置 / acme.sh 自动签发证书 | 栈文件在 `xadmin-installer/deploy/web/` |
 | 方式 C：服务器自带 NGINX | 已有 nginx / 需要与其它站点共存 | 见 [NGINX 部署](./installation-nginx.md) |
 
-### 7. 构建前端产物【方式 A / 方式 B 都需要】
+### 6. 构建前端产物【方式 A / 方式 B 都需要】
 
 ```shell
 dnf install git -y
@@ -259,7 +224,7 @@ docker run --rm -v ./:/app -e TZ=Asia/Shanghai \
     sh -c "corepack enable && corepack prepare pnpm@11.25.0 --activate && pnpm install --frozen-lockfile && pnpm build"
 ```
 
-### 8. 方式 A：官方 xadmin-web 镜像部署【步骤 8 / 9 / 10 任选其一】
+### 7. 方式 A：官方 xadmin-web 镜像部署【步骤 7 / 8 / 9 任选其一】
 
 官方镜像从 Docker Hub 拉取（`nineaiyu/xadmin-web`），镜像内 nginx 已内置 CSP 安全头、
 `/media/` 鉴权转发与 `/_protected_media/` 内部直出位置；`web` 容器通过容器名 `server`
@@ -305,7 +270,7 @@ curl -fsL http://127.0.0.1/ | head -5        # 应返回前端 index.html
 curl -fsL http://127.0.0.1/api/common/api/health   # 经 web 反代访问后端健康检查
 ```
 
-### 9. 方式 B：本地构建 web 栈（nginx 配置可改 + acme.sh 自动签发 HTTPS）【步骤 8 / 9 / 10 任选其一】
+### 8. 方式 B：本地构建 web 栈（nginx 配置可改 + acme.sh 自动签发 HTTPS）【步骤 7 / 8 / 9 任选其一】
 
 web 托管栈（nginx + API 反代 + TLS）原在 `xadmin-client` 仓库内，2026-09 起迁至
 **`xadmin-installer` 仓库的 `deploy/web/` 目录**（部署资产不混入前端源码仓），
@@ -332,7 +297,7 @@ DOMAIN=xadmin.example.com EMAIL=ops@example.com \
 > （external `xadmin-server_net`，写法同方式 A）；否则所有 API 请求会 502。
 > letsencrypt 免费证书 7 天内同一域名最多签 5 次，测试时注意频率。
 
-### 10. 部署 NGINX【步骤 8 / 9 / 10 任选一个】
+### 9. 部署 NGINX【步骤 7 / 8 / 9 任选一个】
 
 使用服务器自带 NGINX 反向代理 + 静态托管时选此路
 （含 `/media/` 鉴权内转、`X-Accel-Redirect` 受保护媒体等关键配置）：

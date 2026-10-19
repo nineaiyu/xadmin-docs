@@ -136,20 +136,21 @@ uv sync --all-groups        # 推荐（以 uv.lock 为准）：开发环境；�
 # pip install -r requirements.txt -r requirements-dev.txt
 ```
 
-## 7.0 修改 server 配置文件
+## 7.0 生成配置（或手工编辑）
+
+推荐用脚本一条命令生成（幂等：`config.yml` 缺失时从模板创建并写入随机
+`SECRET_KEY` / `DB_PASSWORD` / `REDIS_PASSWORD`；已有配置不会被覆盖）：
 
 ```shell
-cp config_example.yml config.yml
+bash ops/init_config.sh
 ```
 
-- a.将config.yml里面的 DB_PASSWORD ， REDIS_PASSWORD 取消注释
+本地（非 Docker）形态需把 `config.yml` 里的数据库 / Redis 主机改为 `127.0.0.1` 并确认密码值，
+然后重跑一次 `bash ops/init_config.sh` 补齐空缺项（`.env` 同步对本地形态非必需，可忽略）。
 
-```shell
-sed -i "s@^#DB_PASSWORD:@DB_PASSWORD:@" config.yml
-sed -i "s@^#REDIS_PASSWORD:@REDIS_PASSWORD:@" config.yml
-```
+想手工编辑的话：`cp config_example.yml config.yml` 后取消注释 `DB_PASSWORD` / `REDIS_PASSWORD`
+并填值，再生成 `SECRET_KEY`（生产服必须保证唯一性与安全性，否则攻击者可以用它来伪造签名值）：
 
-- b.生成，并填写 SECRET_KEY， 加密密钥 生产服必须保证唯一性，你必须保证这个值的安全，否则攻击者可以用它来生成自己的签名值
 ```shell
 sed -i "s@^SECRET_KEY.*@SECRET_KEY: $(cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49)@" config.yml
 ```
