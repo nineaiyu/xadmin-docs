@@ -126,7 +126,6 @@ XADMIN_APPS:
 ├── build.sh                            # 构建脚本
 ├── commitlint.config.js
 ├── contract                            # 后端契约镜像（pnpm sync:contract 同步）
-├── docker-compose.yml                  # docker compose 运行文件
 ├── Dockerfile                          # 用与构建容器镜像文件
 ├── e2e                                 # Playwright E2E（纪律见 e2e/README.md）
 ├── eslint.config.js

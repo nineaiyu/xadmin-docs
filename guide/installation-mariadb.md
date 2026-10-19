@@ -197,28 +197,23 @@ python manage.py restart all -d
 
 ## 5.容器部署，需要添加容器授权，并重启
 ### 获取容器的IP地址，用于mysql授权
-```shell
-mysql
-```
-```shell
-grant all on xadmin.* to server@'192.168.196.%' identified by 'KGzKjZpWBp4R4RSa';
-```
+
+> ⚠️ 后端 `docker-compose.yml` 当前只内置 postgresql 服务，没有 mysql 容器；
+> 本节适用于「MariaDB 装在宿主机、后端跑在容器里」的形态：容器访问宿主机的
+> MariaDB 需把宿主机 IP 映射进容器网络（`host-gateway`），并在 MariaDB 里
+> 给容器网段授权（网段以后端 compose 网络实际子网为准）。
 
 ### 修改 docker-compose.yml 文件，并增加配置如下
 
-```shell
-    depends_on:
-    #  - mysql
-```
+在 `server` 服务下增加 `extra_hosts`（compose 里没有 mysql 服务，故无需处理 `depends_on`）：
 
-```shell
+```yaml
     extra_hosts:
       - "mysql:host-gateway"
 ```
 
-将宿主机的IP 映射到 mysql
-
-并将 ```depends_on``` 里面，关于 mysql的依赖注释或者删掉
+> 同时确认 `config.yml` 的 `DB_PASSWORD` 与上面 grant 的口令一致；compose 的 PG / Redis
+> 密码是强制注入（`.env`），MariaDB 形态下 `DB_PASSWORD` 只在 `config.yml` 生效。
 
 ### 重启容器服务
 ```shell

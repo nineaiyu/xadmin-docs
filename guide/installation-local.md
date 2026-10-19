@@ -16,12 +16,8 @@ mariadb > 10.5 或 mysql > 8.0 | postgresql 17
 
 ## 支持的数据库
 
-- PostgreSQL
-- MariaDB
-- MySQL
-- Oracle
-- SQLite
-
+`DB_ENGINE` 支持 `postgresql`（默认）/ `mysql` / `oracle` / `sqlite3` / `vastbase`
+（ MariaDB 走 `mysql` 引擎，见 [MariaDB 安装文档](./installation-mariadb.md)），
 具体参考官方文档：https://docs.djangoproject.com/zh-hans/6.0/ref/databases/
 
 ## Centos 9 Stream 下本地直接安装部署
@@ -161,9 +157,12 @@ sed -i "s@^SECRET_KEY.*@SECRET_KEY: $(cat /dev/urandom | tr -dc A-Za-z0-9 | head
 ## 7.1 生成数据表并迁移
 
 ```shell
-python manage.py makemigrations
 python manage.py migrate
 ```
+
+> 只需执行 `migrate`（迁移文件随仓库分发）。部署阶段不要跑 `makemigrations`——
+> 它会在运行环境生成新迁移文件，造成代码仓库与实际库的迁移漂移。
+
 ## 7.2 收集静态资源，编译国际化，下载IP数据库
 ```shell
 python manage.py collectstatic
@@ -178,11 +177,13 @@ python ops/init_data.py
 # 自动：migrate + 创建超管（默认 xadmin，随机密码仅打印一次，可用 XADMIN_ADMIN_PASSWORD=xxx 指定）+ 导入默认种子（菜单/权限/角色/配置）
 ```
 
-## 10.启动程序(启动之前必须配置好Redis和数据库)
+## 9.启动程序(启动之前必须配置好Redis和数据库)
 
 ### A.一键执行命令【不支持windows平台，如果是Windows，请使用 手动执行命令】
+
 ```shell
 python manage.py start all -d  # -d 参数是后台运行，如果去掉，则前台运行
+# all = gunicorn(API 服务) + flower(任务监控) + celery + beat 两个任务队列 worker
 ```
 
 ### B.手动执行命令【下面命令一般是开发阶段操作】
@@ -198,6 +199,8 @@ python manage.py runserver 0.0.0.0:8896
 ```shell
 python -m celery -A server beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler --max-interval 60
 python -m celery -A server worker -P threads -l INFO -c 10 -Q celery --heartbeat-interval 10 -n celery@%h --without-mingle
+# heavy 队列（导入/导出等重任务）另起一个 worker：
+python -m celery -A server worker -P threads -l INFO -c 10 -Q heavy --heartbeat-interval 10 -n heavy@%h --without-mingle --prefetch-multiplier 1
 ```
 
 #### 3.任务监控[windows可能会异常]
@@ -209,7 +212,7 @@ python -m celery -A server flower -logging=info --url_prefix=api/flower --auto_r
 
 # 前端构建部署
 
-## 11.克隆前端代码到本地
+## 10.克隆前端代码到本地
 
 ```shell
 dnf install git -y
@@ -218,7 +221,7 @@ cd /data/xadmin/
 git clone https://github.com/nineaiyu/xadmin-client.git
 ```
 
-## 12. 通过官网安装23版本的node环境
+## 11. 安装 Node 24 环境与 pnpm
 ```shell
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 ```
@@ -231,7 +234,7 @@ corepack enable pnpm
 pnpm -v
 ```
 
-## 13.编译安装
+## 12.编译安装
 
 ```shell
 cd /data/xadmin/xadmin-client
@@ -239,4 +242,4 @@ pnpm install --frozen-lockfile
 pnpm build
 ```
 
-## [14.部署NGINX,并访问](../guide/installation-nginx)
+## [13.部署NGINX,并访问](../guide/installation-nginx)

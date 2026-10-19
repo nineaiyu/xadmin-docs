@@ -42,9 +42,9 @@ mariadb > 10.5 或 mysql > 8.0 | postgresql 17
 |------|------|------|
 | 1 | 安装 Docker 与 compose 插件 | [一、安装 Docker](#一、安装-docker-已有-docker-可跳过) |
 | 2 | 克隆后端代码 + 构建镜像 | [二、部署 api 服务端](#二、部署-api-服务端) |
-| 3 | 修改配置（数据库口令 / Redis 口令 / `SECRET_KEY`） | 同上 |
+| 3 | 修改配置（`config.yml` + `.env`） | 同上 |
 | 4 | 启动后端容器 + 初始化数据 | 同上 |
-| 5 | 构建并启动前端（容器或 NGINX 二选一） | [三、前端构建部署](#三、前端构建部署) |
+| 5 | 部署前端（官方镜像 / 源码构建 / NGINX 三选一） | [三、前端部署](#三、前端部署) |
 
 ### docker 环境安装
 
@@ -131,7 +131,7 @@ mkdir -pv /data/xadmin/
 cd /data/xadmin/
 git clone https://github.com/nineaiyu/xadmin-server.git
 cd xadmin-server
-git checkout <目标版本 tag>   # 建议锁定版本（如 v5.0.1）；省略则用默认分支最新代码
+git checkout <目标版本 tag>   # 建议锁定版本（如 v5.0.2）；省略则用默认分支最新代码
 ```
 
 ### 2. 构建容器镜像
@@ -145,11 +145,13 @@ docker compose build
 
 ### 3. 修改 server 配置文件
 
+**3.1 应用配置 `config.yml`**（数据库 / Redis 连接与密钥的唯一定义处）：
+
 ```shell
 cp config_example.yml config.yml
 ```
 
-- a. 将 config.yml 里面的 `DB_PASSWORD`、`REDIS_PASSWORD` 取消注释
+- a. 将 config.yml 里面的 `DB_PASSWORD`、`REDIS_PASSWORD` 取消注释并填值
 
 ```shell
 sed -i "s@^#DB_PASSWORD:@DB_PASSWORD:@" config.yml
@@ -161,6 +163,23 @@ sed -i "s@^#REDIS_PASSWORD:@REDIS_PASSWORD:@" config.yml
 ```shell
 sed -i "s@^SECRET_KEY.*@SECRET_KEY: $(cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49)@" config.yml
 ```
+
+**3.2 compose 凭据 `.env`（必须，否则 `docker compose up` 直接报错拒启）**
+
+`docker-compose.yml` 里 PostgreSQL / Redis 的密码是**强制注入**的（`:?DB_PASSWORD is required`），
+compose 的变量插值读不了 YAML，所以除了 `config.yml` 还必须在同目录准备一份 `.env`
+（`KEY=VALUE` 格式），两个密码值与 `config.yml` 保持一致：
+
+```shell
+cat > .env <<EOF
+DB_PASSWORD=<与 config.yml 的 DB_PASSWORD 一致>
+REDIS_PASSWORD=<与 config.yml 的 REDIS_PASSWORD 一致>
+EOF
+chmod 600 .env
+```
+
+> 说明：仓库内的 `ops/dev_up.sh` 会自动维护这份 `.env`（视为派生缓存，勿手工编辑）；
+> 本节是**绕过脚本的手工部署**路径，所以需要自己创建。`.env` 已被 gitignore，不会被提交。
 
 ### 4. 启动 api 服务
 
@@ -201,122 +220,130 @@ docker compose logs -f server                                          # 查看�
 docker compose down                                                    # 停止全部容器（数据卷保留）
 ```
 
-## 三、前端构建部署
+## 三、前端部署
 
-### 7. 克隆前端代码到本地
+前端是纯静态产物（`xadmin-client` 构建出的 `dist/`），托管 + 反代三选一：
+
+| 方式 | 适合场景 | 特点 |
+|------|----------|------|
+| 方式 A：官方 `xadmin-web` 镜像 | 推荐，与安装器一键部署同构 | 内置 CSP 安全头、`/media/` 鉴权内转，无需自写 nginx 配置 |
+| 方式 B：本地构建 web 栈 | 需要修改 nginx 配置 / acme.sh 自动签发证书 | 栈文件在 `xadmin-installer/deploy/web/` |
+| 方式 C：服务器自带 NGINX | 已有 nginx / 需要与其它站点共存 | 见 [NGINX 部署](./installation-nginx.md) |
+
+### 7. 构建前端产物【方式 A / 方式 B 都需要】
 
 ```shell
 dnf install git -y
 mkdir -pv /data/xadmin/
 cd /data/xadmin/
 git clone https://github.com/nineaiyu/xadmin-client.git
+cd xadmin-client
+git checkout <目标版本 tag>   # 与后端 tag 保持一致
+
+# Node >= 24 与 pnpm >= 11（nvm 安装见下）
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+source ~/.bashrc
+nvm install 24
+corepack enable pnpm
+
+pnpm install --frozen-lockfile
+pnpm build    # 产物在 dist/
 ```
 
-### 8. 通过脚本进行容器化构建
+不想装 Node 环境，也可以用容器构建（`build.sh` 内部即此原理）：
 
 ```shell
 cd /data/xadmin/xadmin-client
-sh build.sh    # 内部使用 docker run -it 构建，需在交互式终端执行（CI / 管道环境会报 the input device is not a TTY）
+docker run --rm -v ./:/app -e TZ=Asia/Shanghai \
+    registry.cn-beijing.aliyuncs.com/nineaiyu/node:24.20.0-slim \
+    sh -c "corepack enable && corepack prepare pnpm@11.25.0 --activate && pnpm install --frozen-lockfile && pnpm build"
 ```
 
-### 9. 使用容器启动前端服务【必须先启动 server 服务】【步骤 9 和 10 任选一个】
+### 8. 方式 A：官方 xadmin-web 镜像部署【步骤 8 / 9 / 10 任选其一】
 
-#### 构建 xadmin-web 服务
+官方镜像从 Docker Hub 拉取（`nineaiyu/xadmin-web`），镜像内 nginx 已内置 CSP 安全头、
+`/media/` 鉴权转发与 `/_protected_media/` 内部直出位置；`web` 容器通过容器名 `server`
+访问后端，因此必须与后端主栈在同一个 compose 网络里。
 
-```shell
-cd /data/xadmin/xadmin-client/
-docker compose build
-```
+新建 `/data/xadmin/web/` 目录，创建 `docker-compose.yml`：
 
-#### 启动 xadmin-web 服务
-
-默认是 80 端口，如果服务器存在该端口占用，请修改 `docker-compose.yml` 文件，将第一个 80 端口改为其他端口，或者使用服务器自带 NGINX 部署服务，参考下一步骤 10。
-
-```shell
-cd /data/xadmin/xadmin-client/
-docker compose up -d
-```
-
-#### 开启域名 Https 加密访问，使用 acme.sh 免费 SSL 证书【可选】
-
-##### 前置条件
-
-- 有一个域名【使用国内服务器，域名必须备案】，有公网 IP，并且域名已经解析到该服务器的公网 IP；
-- 该有公网的服务器无 80、443 端口监听。
-
-##### 修改文件 `docker-compose.yml`，需要修改三个内容，参考如下三个注释
-
-```shell
+```yaml
 services:
-  nginx-web:
-    image: xadmin-web
+  xadmin-web:
+    image: nineaiyu/xadmin-web:5.0.2        # 与后端版本保持一致
     container_name: xadmin-web
-    hostname: xadmin-web
-    build:
-      context: .
-      dockerfile: Dockerfile-web
     restart: always
     environment:
-      TZ: ${TZ:-Asia/Shanghai}
-#      DOMAIN: ${DOMAIN:-xadmin.dvcloud.xin}  # 如果要使用ssl，并且使用acme.sh自动申请证书，请取消注释，并将 xadmin.dvcloud.xin 填写自己的域名！！！
-#      EMAIL: ${EMAIL:-xadmin@dvcloud.xin}   # 如果要使用ssl，并且使用acme.sh自动申请证书，请取消注释，并将 xadmin@dvcloud.xin 填写自己的邮件！！！
-    volumes:
-      - ./web/acme.sh:/web/acme.sh
-      - ./web/data/dist:/web/dist
-      - ./web/data/.acme.sh:/root/.acme.sh
-      - ./web/data/cert:/web/cert
-      - ./web/data/logs:/var/log/nginx
+      TZ: Asia/Shanghai
+      HTTP_PORT: "80"                        # 对外监听端口（改端口需同时改 ports 映射）
+      CLIENT_MAX_BODY_SIZE: 4096m            # 上传大小上限
     ports:
-#      - "443:443"  # 如果要使用ssl，请取消注释
       - "80:80"
+    volumes:
+      # 前端构建产物（上一步 pnpm build 的 dist/）
+      - /data/xadmin/xadmin-client/dist:/opt/xadmin-client:ro
+      # 与后端共享媒体目录（/_protected_media 内部直出需要）
+      - /data/xadmin/xadmin-server/data/upload:/data/xadmin/server/data/upload:ro
     networks:
-      - net
+      - xadmin-net
+
+networks:
+  xadmin-net:
+    external: true
+    name: xadmin-server_net                  # 后端主栈网络（docker-compose.yml 创建）
 ```
 
-注意：使用的 letsencrypt 免费证书服务，7 天内，同一个域名可签 5 次。
+> 后端主栈的网络名是 `<compose 项目名>_net`；按上文路径部署（目录名 `xadmin-server`）
+> 即为 `xadmin-server_net`，可用 `docker network ls` 确认。项目目录名不同时改 `name:` 即可。
+
+启动并验证：
 
 ```shell
-./web
-├── acme.sh
-│   ├── acme.sh
-│   ├── deploy
-│   └── notify
-├── conf   # web配置，用于镜像构建
-│   ├── nginx.conf
-│   └── xadmin-api-conf
-└── data   # 容器持久化目录，存放静态文件，证书，日志
-    ├── .acme.sh  # acme.sh 安装路径
-    ├── cert      # ssl证书，自动生成
-    ├── dist      # xadmin-client 静态文件
-    └── logs      # xadmin-web nginx服务日志
-
-```
-
-修改之后，启动服务，前台运行，查看输出是否正常，申请证书是否正常，测试访问是否正常：
-
-```shell
-cd /data/xadmin/xadmin-client/
-docker compose up
-```
-
-如果正常，停止上面命令，请执行下面命令，放后台运行：
-
-```shell
-cd /data/xadmin/xadmin-client/
+cd /data/xadmin/web/
 docker compose up -d
+curl -fsL http://127.0.0.1/ | head -5        # 应返回前端 index.html
+curl -fsL http://127.0.0.1/api/common/api/health   # 经 web 反代访问后端健康检查
 ```
 
-上面完成后，请访问 `https://域名` 访问服务，如果正常，恭喜，安装成功，无需操作第 10 步。
+### 9. 方式 B：本地构建 web 栈（nginx 配置可改 + acme.sh 自动签发 HTTPS）【步骤 8 / 9 / 10 任选其一】
 
-### 10. 部署 NGINX，并访问【步骤 9 和 10 任选一个】
+web 托管栈（nginx + API 反代 + TLS）原在 `xadmin-client` 仓库内，2026-09 起迁至
+**`xadmin-installer` 仓库的 `deploy/web/` 目录**（部署资产不混入前端源码仓），
+文件清单与细节见该目录的 [README](https://github.com/nineaiyu/xadmin-installer/blob/main/deploy/web/README.md)。
 
-见 [NGINX 部署](./installation-nginx.md)：使用服务器自带 NGINX 反向代理 + 静态托管时选此路
-（含 `/media/` 鉴权内转、`X-Accel-Redirect` 受保护媒体等关键配置）。
+```shell
+dnf install git -y
+cd /data/xadmin/
+git clone https://github.com/nineaiyu/xadmin-installer.git
+
+cd /data/xadmin/xadmin-installer/deploy/web/
+
+# 纯 HTTP（默认 80 端口，端口被占用时用 HTTP_PORT 换端口）：
+DIST_DIR=/data/xadmin/xadmin-client/dist HTTP_PORT=8080 docker compose up -d --build
+
+# HTTPS（acme.sh 自动签发 + 续签，需域名已解析到本机且 80/443 可达）：
+DOMAIN=xadmin.example.com EMAIL=ops@example.com \
+    DIST_DIR=/data/xadmin/xadmin-client/dist docker compose up -d --build
+```
+
+> ⚠️ 该栈的 nginx 把 `/api`、`/ws`、`/media`、`/flower`、`/api-docs` 反代到
+> 容器名 `server`（后端主栈的 server 容器），需要加入后端网络才通：
+> 在 `docker-compose.yml` 里把 `networks: default` 替换为后端主栈网络
+> （external `xadmin-server_net`，写法同方式 A）；否则所有 API 请求会 502。
+> letsencrypt 免费证书 7 天内同一域名最多签 5 次，测试时注意频率。
+
+### 10. 部署 NGINX【步骤 8 / 9 / 10 任选一个】
+
+使用服务器自带 NGINX 反向代理 + 静态托管时选此路
+（含 `/media/` 鉴权内转、`X-Accel-Redirect` 受保护媒体等关键配置）：
+见 [NGINX 部署](./installation-nginx.md)。
 
 ## 四、部署后检查清单
 
 - [ ] `curl http://127.0.0.1:8896/api/common/api/health` 各项为 `true`；
 - [ ] 浏览器访问前端地址，能用 `xadmin` + 初始化时打印的密码登录；
+- [ ] 头像 / 附件等媒体资源能正常显示（`/media/` 走应用鉴权；用官方 web 镜像或
+      按 [NGINX 部署](./installation-nginx.md) 配置了 `/_protected_media/` 内转的都无需额外操作）；
 - [ ] 普通账号登录前，先在「角色管理」给角色授权菜单（权限码 `动作:组件名` 必须入库，见
       [权限体系速览](../advanced/permission.md)）；
 - [ ] 用非默认端口（非 80/443）对外时，检查头像等媒体资源是否正常（见
