@@ -97,10 +97,45 @@ mysql-tzinfo-to-sql /usr/share/zoneinfo | mysql -u root mysql
 - 参考 [NGINX 部署](/guide/installation-nginx) 中的
   `proxy_set_header X-Forwarded-Host $host:$server_port;`（非标准端口时需打开该配置）。
 
-## 更多资料
+### 13. 服务启动后立刻退出 / 全部 manage.py 命令报错
+
+- 常见三类原因：没有 `config.yml`（开发环境会回落 `config_example.yml` 并自动生成密钥，
+  但显式配了却没填 `SECRET_KEY` 且 `DEBUG=false` 时拒绝启动）、`SECRET_KEY` 为空、端口被占用；
+- 处置：`cp config_example.yml config.yml` 并填写 `SECRET_KEY`；端口冲突改 `HTTP_LISTEN_PORT`；
+- 一条命令自检：`python manage.py doctor`（输出含每一项的修复命令）。
+
+### 14. 清库（DROP DATABASE）后登录 500 或配置不生效
+
+- 旧配置缓存在 **Redis**（缓存 / 会话 / broker），清库只动了数据库；
+- 正确顺序：停应用容器 → `DROP DATABASE` + `CREATE DATABASE` → **`redis-cli FLUSHALL`（关键，勿漏）**
+  → 启动容器（entrypoint 自动 migrate）→ 重新初始化种子；
+- 清 Redis 前先 `docker compose stop celery-worker celery-heavy celery-beat`，避免在途任务丢失。
+
+### 15. 上传图片 / 大文件失败
+
+- 业务码 `1002` = 文件类型不在白名单；`1003` = 超过大小上限
+  （站点配置 `PICTURE_UPLOAD_SIZE` / `FILE_UPLOAD_SIZE`）；
+- 调大上限时**同步调大反向代理的 `client_max_body_size`**，否则请求在到达应用前就被拒绝。
+
+### 16. 本地前后端联调：接口 404 / 请求没打到后端
+
+- vite dev server 的 `/api` 代理目标与后端实际端口不一致；或被别的进程占用端口
+  （Docker 后端 8896 / E2E 后端 18896 互不混用）；
+- 确认后端端口（默认 8896）后重启前端 dev server；后端不在默认端口时用环境变量
+  `E2E_API_PORT` 覆盖代理目标（见 [客户端开发](/devguidelines/client)）。
+
+### 17. 重建后端容器后，经反向代理访问 API 502
+
+- 容器重建后 IP 变化，反代若持有旧的静态上游地址即转发失败；
+- 确认反代已是「运行期解析」形态（`resolver 127.0.0.11` + 变量 `proxy_pass`）时，
+  server 就绪后 10 秒内自动恢复；仍是静态 upstream 才需要重启反代容器。
+
+## 四、更多资料
 
 - 生产部署与配置速查：[部署与运维手册](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/deployment.md)；
 - 故障处置步骤（服务起不来 / 任务积压 / 磁盘告警等）：[runbook](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/runbook.md)；
 - 备份 / 恢复 / 时间点恢复（PITR）：[pitr.md](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/pitr.md)；
 - 安装器命令与常见问题：[安装器 FAQ](/problem/installer)；
-- 开发期高频坑（静默失败类）：[dev-pitfalls](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/dev-pitfalls.md)。
+- 开发期高频坑（静默失败类）：[dev-pitfalls](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/dev-pitfalls.md)；
+- 二次开发者视角的完整 FAQ（登录 / 容器 / 权限 / 模块裁剪 / CSP / 时区）：
+  [troubleshooting.md](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/guide/troubleshooting.md)。

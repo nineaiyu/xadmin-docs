@@ -105,6 +105,15 @@ python manage.py generate_module demo_expense --app demo \
 - 模块配置写错（未知 id）同样在启动期报错，便于及早发现；
 - 关闭模块既不需要删数据，也不需要重跑种子。
 
+## 排障
+
+| 现象 | 原因与处置 |
+|------|-----------|
+| 改了 `MODULE_*` 没生效 | 配置变更**重启进程后**才生效；重启时会自动清理菜单与权限缓存 |
+| 后台「模块管理」改完不生效 | 后台保存的是数据库覆盖行（优先于 `config.yml` / 环境变量）；页面会展示「待重启生效」差异与重启命令，执行后生效 |
+| 不确定当前为何是这个组合 | `python manage.py doctor` 的「模块裁剪」项会指出 preset 与是否来自后台覆盖行；`python manage.py modules --clear-override` 可清理覆盖回到 `config.yml` 基线 |
+| 重启命令不适用当前部署 | 系统参数 `MODULE_RESTART_COMMAND` 可按部署形态覆盖（默认 `sh xadmin.sh restart`） |
+
 模块的完整清单、依赖关系与二开维护约定见后端仓库
 `docs/architecture/模块化与功能裁剪.md`；架构决策与验收记录见
 `docs/adr/ADR-045-modular-trimmable-architecture.md`。

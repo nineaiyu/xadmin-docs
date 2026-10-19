@@ -68,3 +68,34 @@ docker exec -i xadmin-server python manage.py post_upgrade    # 幂等：种子/
 - `./xadmin.sh uninstall` 全程交互确认：停服 → **可选**清理 `VOLUME_DIR` 数据目录与 `/opt/xadmin/config`
   配置目录 → **可选**清理镜像；
 - **数据删除不可逆**：清理前请先 `./xadmin.sh backup_db` 并把备份文件拷出数据目录。
+
+### 9. 数据库备份 / 恢复怎么做
+
+```bash
+./xadmin.sh backup_db                 # 备份到 ${VOLUME_DIR}/db_backup/
+./xadmin.sh restore_db <备份文件路径>   # 从备份恢复（会停服，恢复后需重启）
+```
+
+备份只是兜底的一部分。媒体文件（附件物理文件）在 `${VOLUME_DIR}/server/data`，
+与数据库**分开**存放——完整的数据安全策略（备份频率 / 保留 / 演练 / PITR）见服务端仓库
+[ops/pitr.md](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/pitr.md) 与
+[ops/backup-drill-2026-Q4.md](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/backup-drill-2026-Q4.md)。
+
+### 10. 数据目录 / 配置目录在哪里
+
+| 内容 | 路径 |
+|------|------|
+| 数据卷根目录（`VOLUME_DIR`） | 以 `/opt/xadmin/config/config.txt` 为准（安装时选定） |
+| 数据库备份（安装器命令） | `${VOLUME_DIR}/db_backup/` |
+| 容器级定时备份（db-backup 容器） | `${VOLUME_DIR}/xadmin-db-backups/`（默认 6 小时一次、保留 7 天，含媒体目录） |
+| 媒体与运行数据 | `${VOLUME_DIR}/server/data`（日志 / 附件 / 临时文件） |
+| 安装配置 | `/opt/xadmin/config/`（`config.txt` 含初始管理员密码） |
+
+### 11. 想定期自动备份数据库
+
+后端 compose 自带 `db-backup` 容器（随栈启动）：默认每 6 小时做一次逻辑备份、保留 7 天，
+并可选把媒体目录一并纳入、同步到异地副本（`BACKUP_REMOTE_TYPE=local/rsync/rclone`）。
+需要更短的恢复窗口（RPO）时，走 WAL 归档 / PITR，见服务端仓库
+[ops/pitr.md](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/pitr.md)；
+备份策略与演练记录见
+[ops/backup-drill-2026-Q4.md](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/backup-drill-2026-Q4.md)。

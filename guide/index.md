@@ -29,6 +29,17 @@ xadmin 是基于 Django 6.0 + Vue 3 + Element Plus 的前后端分离全栈管�
 | [xadmin-web](https://github.com/nineaiyu/xadmin-web)             | <a href="https://github.com/nineaiyu/xadmin-web/releases"><img alt="Web release" src="https://img.shields.io/github/release/nineaiyu/xadmin-web.svg" /></a>                   | NGINX       |
 | [xadmin-installer](https://github.com/nineaiyu/xadmin-installer) | <a href="https://github.com/nineaiyu/xadmin-installer/releases"><img alt="Installer release" src="https://img.shields.io/github/release/nineaiyu/xadmin-installer.svg" /></a> | 容器化安装       |
 
+## 本站导航
+
+| 我想…… | 去这里 |
+|---|---|
+| 看系统都有哪些能力 | [功能特性总览](./features.md) |
+| 几分钟跑起来看效果 | [快速体验（一键启动）](./quick-start.md) |
+| 生产服务器一键安装 | [一键部署](./demo.md) |
+| 手工部署（compose / 源码 / NGINX） | [容器化部署](./installation-docker.md) · [本地部署](./installation-local.md) · [NGINX 部署](./installation-nginx.md) |
+| 从零写第一个业务模块 | [入门 Demo 示例](../example/new-app-api.md)（后端 → 前端 → 菜单 → 权限 → 测试） |
+| 了解权限 / 存储 / 裁剪 | [进阶开发](../advanced/) |
+
 ## 在线体验
 
 演示地址： https://xadmin.dvcloud.xin

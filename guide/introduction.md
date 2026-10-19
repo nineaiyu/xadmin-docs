@@ -2,31 +2,46 @@
 
 ## server 整体目录结构
 
-```shell
-├── captcha                     # 图片验证码应用
-├── common                      # 项目工具类库，包含各种封装方法
-├── config.yml                  # 运行配置文件（由 config_example.yml 复制而来）
-├── data                        # 运行数据目录（日志 data/logs、临时文件等）
-├── demo                        # 官方示例 app（Book 四件套 + 上架审批/二次确认；教程见 docs/guide/）
-├── docker-compose.yml          # docker compose 运行文件
-├── Dockerfile                  # 用于构建容器镜像文件
-├── docs                        # 文档中心（二开必读见 docs/README.md）
-├── loadjson                    # 平台共享种子（目录菜单 / 平台级权限点 / 角色 / 配置）
-│                               # 各应用的菜单、权限点、字段权限在 <app>/seeds/（manifest.json 自声明）
-├── locale                      # 国际化配置，支持中文和英语
-├── manage.py
-├── mfa                         # 多因素认证应用
-├── message                     # websocket 消息
-├── notifications               # 站内信，消息通知推送应用
-├── pyproject.toml              # 依赖事实源 + uv.lock（锁文件，容器与 CI 据此安装）
-├── requirements.txt            # uv export 产物（安全扫描 / 手工安装用，勿手工编辑）
-├── scripts                     # 门禁 / 自检脚本
-├── server                      # 项目主应用（settings / urls / asgi）
-├── settings                    # 系统设置应用
-├── system                      # 系统应用，包含用户，菜单，日志，角色等
-├── tests                       # 测试（unit / integration）
-└── ops                         # 一键启动与初始化脚本（dev_up.sh / init_data.py）
+> 5.0 起业务按**域**拆成多个 app（用户/文件/日志/任务各自独立）；下表按职责分组，
+> 完整清单以仓库现状为准（`python manage.py modules` 可看模块与路由归属）。
 
+```shell
+├── config.yml / config_example.yml   # 运行配置（前者由后者复制而来；开发环境无 config.yml 会回落）
+├── docker-compose.yml                # docker compose 运行文件（另有多副本 / 测试 / Web 变体）
+├── Dockerfile / Dockerfile-base      # 容器镜像构建文件
+├── manage.py
+├── pyproject.toml                    # 依赖事实源 + uv.lock（容器与 CI 据此安装）
+├── requirements.txt                  # uv export 产物（安全扫描 / 手工安装用，勿手工编辑）
+│
+├── server/                           # 项目主应用（settings / urls / asgi）
+├── packages/xadmin-common/           # 框架内核包（common/：模型基类 / ViewSet / 权限 / 缓存…）
+│
+├── 业务应用（按域拆分，均可整体裁剪，见「功能裁剪」）
+│   ├── identity/                     # 身份域：用户 / 部门 / 角色 / 菜单 / 权限 / 登录 / PAT / 开放平台
+│   ├── file/                         # 文件域：附件 / 预览 / 存储后端
+│   ├── audit/                        # 审计域：操作日志 / 登录日志 / 在线用户 / 数据脱敏
+│   ├── task/                         # 任务域：定时任务 / 导出下载 / Webhook
+│   ├── system/                       # 系统域：菜单权限治理 / 字段权限 / 字典 / 全局搜索
+│   ├── settings/                     # 系统设置应用（站点 / 安全 / 消息 / 水印配置）
+│   ├── notifications/                # 站内信，消息通知推送
+│   ├── message/                      # websocket 消息
+│   ├── captcha/                      # 图片验证码
+│   ├── mfa/                          # 多因素认证
+│   ├── approval/                     # 敏感操作审批
+│   ├── ai/                           # AI 助手 / 知识库 / 工具层
+│   ├── dataset/                      # 数据分析（数据集 / 仪表盘 / 报表 / 大屏）+ 表单采集
+│   └── demo/                         # 官方示例 app（Book 四件套 + 上架审批 / 二次确认）
+│
+├── demo_seed/                        # 演示数据种子（seed_demo_all 等命令族）
+├── loadjson/                         # 平台共享种子（目录菜单 / 平台级权限点 / 角色 / 配置）
+│                                     # 各应用的菜单、权限点、字段权限在 <app>/seeds/（manifest.json 自声明）
+├── locale/                           # 国际化配置，支持中文和英语
+├── data/                             # 运行数据目录（日志 data/logs、上传文件、临时文件等）
+├── docs/                             # 文档中心（二开必读见 docs/README.md）
+├── ops/                              # 一键启动与运维脚本（dev_up.sh / init_data.py / db_backup.sh…）
+├── scripts/                          # 门禁 / 自检脚本
+├── tests/                            # 测试（unit / integration）
+└── examples/                         # 可运行样本（插件样例等）
 ```
 
 ## 项目配置模板文件 config_example.yml（节选）
@@ -128,19 +143,21 @@ XADMIN_APPS:
 │   ├── App.vue
 │   ├── assets
 │   ├── components          # 组件库
-│       ├── RePlusSearch    # 后端对应搜索组件-重要！！！
-│       ├── RePlusPage      # 页面组件-重要！！！
+│   │   ├── RePlusSearch    # 后端对应搜索组件-重要！！！
+│   │   └── RePlusPage      # 页面组件-重要！！！
 │   ├── config              # 项目配置
 │   ├── constants
 │   ├── directives
+│   ├── hooks               # 组合式函数（usePageAuth 等）
 │   ├── layout              # 项目框架
 │   ├── main.ts
 │   ├── plugins
 │   ├── router              # 路由
 │   ├── store
 │   ├── style
-│   ├── utils           
-│   └── views               #页面
+│   ├── tests               # 测试工具与夹具
+│   ├── utils
+│   └── views               # 页面
 ├── playwright.config.ts
 ├── scripts                             # 校验脚本（版本 / 契约 / 体积等）
 ├── stylelint.config.js

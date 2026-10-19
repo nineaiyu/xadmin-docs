@@ -6,7 +6,7 @@
 ## 前置条件
 
 - Docker（含 compose v2）；
-- Node.js ≥ 22.22.1、pnpm ≥ 11（不启动前端可不需要）。
+- Node.js ≥ 24、pnpm ≥ 11（与客户端 `package.json` 的 `engines` 一致；不启动前端可不需要）。
 
 ## 一键启动
 
@@ -21,13 +21,25 @@ bash ops/dev_up.sh --with-demo   # 启动后端全栈 + 幂等初始化 + 演示
    **首次运行会自动构建镜像，需要数分钟**；
 2. 等待健康检查（`/api/common/api/health`）通过，自动执行 `python ops/init_data.py`
    （migrate + 创建超管 + 导入默认种子）；
-3. 追加执行 `doctor` 环境自检（八项检查，失败不阻塞启动，按输出中的修复命令处理）；
+3. 追加执行 `doctor` 环境自检（十项检查，失败不阻塞启动，按输出中的修复命令处理）；
 4. 存在 `../xadmin-client` 时自动 `pnpm install`（首次）并启动前端 dev server。
 
-启动完成后：
+## 启动完成后
 
 - 前端：<http://127.0.0.1:8848>（Ctrl+C 仅退出前端，后端容器保持运行）；
 - 后端：<http://127.0.0.1:8896>（API 文档：`/api-docs/swagger/`）。
+
+## 常用管理命令（在 xadmin-server 目录执行）
+
+```bash
+docker exec -i xadmin-server python manage.py doctor              # 环境自检（十项，带修复命令）
+curl http://127.0.0.1:8896/api/common/api/health                  # 健康检查（DB/Redis/存储四态）
+docker compose restart server celery-worker celery-heavy celery-beat   # 改代码/配置后重启（不热加载）
+python manage.py seed_demo_all                                    # 手动补装演示数据（幂等）
+python manage.py seed_demo_all --reset                            # 重置演示数据为初始状态
+python manage.py seed_demo_clean                                  # 一键卸载演示数据
+docker compose logs -f server                                     # 跟踪后端日志
+```
 
 ## 首次登录
 
@@ -66,6 +78,6 @@ cd xadmin-server && docker compose down -v
 | 首次启动很慢 | 首次需构建镜像 / 安装依赖；后续启动为数秒级 |
 | 修改后端代码不生效 | 代码挂载但不热加载：`docker compose restart server celery-worker celery-heavy celery-beat` |
 | 升级后新菜单 403 / 文案变英文 | `docker exec -i xadmin-server python manage.py post_upgrade` 后重启 |
-| 环境异常想自检 | `docker exec -i xadmin-server python manage.py doctor`（八项检查 + 修复命令） |
+| 环境异常想自检 | `docker exec -i xadmin-server python manage.py doctor`（十项检查 + 修复命令） |
 
 更多疑难见[常见问题](/problem/one)。

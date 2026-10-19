@@ -38,6 +38,10 @@ export default defineConfig({
                         link: '/guide/introduction'
                     },
                     {
+                        text: '功能特性总览',
+                        link: '/guide/features'
+                    },
+                    {
                         text: '快速体验（一键启动）',
                         link: '/guide/quick-start'
                     },

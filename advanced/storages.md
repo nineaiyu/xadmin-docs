@@ -60,6 +60,21 @@ python manage.py storage_migrate --verify     # 校验存在性与大小（--md5
 | 阿里云 OSS | `https://oss-cn-zhangjiakou.aliyuncs.com` | 留空 | 配 CDN 时填 `FILE_S3_CUSTOM_DOMAIN` |
 | AWS S3 | 留空 | 留空 | 必填 `FILE_S3_REGION` |
 
+### MinIO 本地快速开始（docker）
+
+```bash
+docker run -d --name xadmin-minio -p 9000:9000 -p 9001:9001 \
+  -e MINIO_ROOT_USER=xadmin -e MINIO_ROOT_PASSWORD=<强口令> \
+  minio/minio server /data --console-address ":9001"
+```
+
+然后在 MinIO 控制台（<http://127.0.0.1:9001>）创建桶（如 `xadmin`），
+把 `FILE_S3_ENDPOINT` 设为 `http://<minio地址>:9000`、`FILE_S3_ADDRESSING_STYLE` 设为 `path`，
+Access Key / Secret Key 填上面设置的 `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD`。
+
+> 系统配置里的密钥是**加密存储**的（界面不回显）；填错的表现是上传报存储错误，
+> 可用 `python manage.py doctor` 或 health 接口的 `storage_status` 确认。
+
 ## 4. 手工方案（历史，保留参考）
 
 > 以下为内置后端之前的手工方案：直接改写 `server/settings/base.py` 的 `STORAGES`。

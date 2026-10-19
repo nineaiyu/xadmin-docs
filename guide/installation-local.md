@@ -8,7 +8,8 @@ xadmin-server 是基于 Python 环境开发，建议使用 Python 3.14+ 进行�
 
 ```
 python >=3.14
-nodejs >=22
+nodejs >=24（与客户端 package.json 的 engines 一致）
+pnpm >=11
 redis >=6
 mariadb > 10.5 或 mysql > 8.0 | postgresql 17
 ```
@@ -225,7 +226,7 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 ```shell
 source ~/.bashrc
 nvm install 24
-node -v # 应输出 v24.20.0（与仓库 .nvmrc 一致；最低要求 Node >= 22.22.1）。
+node -v # 应输出 v24.20.0（与仓库 .nvmrc 一致；最低要求 Node >= 24，见 package.json 的 engines）。
 corepack enable pnpm
 pnpm -v
 ```
