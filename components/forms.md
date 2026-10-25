@@ -66,7 +66,13 @@
 敏感操作前的动态码校验：
 
 ```vue
-<ReMfaConfirm :confirm-type="'reset_password'" @success="submit" />
+<!-- 渲染协议组件：经包装层挂载（http 层审批/确认协议自动唤起），不在页面模板直接使用 -->
+<ReMfaConfirm
+  confirm-type="reset_password"
+  :resolve="onConfirmed"
+  :reject="onCancelled"
+  :destroy="unmount"
+/>
 ```
 
 ## 弹层：ReDialog / ReDrawer

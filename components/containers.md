@@ -99,7 +99,6 @@ const {
 <ReTableAction
   :actions="rowActions"
   :dropdown-actions="moreActions"
-  :auth="auth"
   more-text="更多"
 />
 ```

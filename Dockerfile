@@ -8,7 +8,9 @@ ARG VERSION
 
 COPY . .
 
-RUN sed -i "s@VERSION=.*@VERSION=v${VERSION}@" guide/demo.md
+# 版本入参归一化 v 前缀（与 build.sh 同口径）：镜像 tag 不含 v，文档命令形态带 v，
+# 不归一化会在 workflow 改传带 v 版本时产出 vvX.Y.Z
+RUN sed -i "s@VERSION=.*@VERSION=v${VERSION/v/}@" guide/demo.md
 
 RUN pnpm install --frozen-lockfile && pnpm run docs:build
 
