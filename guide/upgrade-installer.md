@@ -22,7 +22,7 @@
 ./xadmin.sh upgrade
 
 # 升级到指定版本（推荐：明确写出版本号）
-./xadmin.sh upgrade v5.0.1
+./xadmin.sh upgrade vX.Y.Z
 ```
 
 脚本逐步执行（每步失败会给出中止 / 继续选项，生产环境建议中止排查）：
@@ -36,11 +36,11 @@
 | 5 | **PostgreSQL 大版本迁移**（按需） | 见第三节：数据目录 16 → 17 时自动导出 / 重建 / 恢复 |
 | 6 | **迁移前体检 → 原地对齐（按需）→ 账本认领** | 先 `upgrade_check` 判定；若结论是 `legacy-inplace-capable`（按域分表之前的旧库但结构可自动对齐），脚本打印**完整预演**并询问是否执行原地对齐（表改名 / 补列 / 补表 / 引用与账本重写；数据、主键、附件与二开表都保留）；随后 `upgrade_ledger --apply` 认领账本、执行 `migrate` |
 | 7 | **升级后收尾** | 自动执行 `post_upgrade`（账本 / API 前缀平移 / 种子 / 权限点 / 语言包 / 缓存，幂等） |
-| 8 | 旧镜像清理（可选）+ 完成提示 | 之后执行 `./xadmin.sh start` 启动，或让脚本直接启动 |
+| 8 | **启动并健康校验** | 自动执行 `./xadmin.sh start`，等待 `xadmin-server`（及启用的 celery / web）healthy；失败即中止并打印回滚指引 |
+| 9 | 旧镜像清理（可选）+ 完成提示 | **默认保留旧镜像**（离线回滚的唯一退路）；健康校验通过后才询问是否清理 |
 
-```bash
-./xadmin.sh start          # 启动服务
-```
+> 升级结束时服务已经启动并校验过健康；无需再手工 `./xadmin.sh start`。
+> 只有健康校验失败时才会保留现场退出，按终端打印的回滚指引操作。
 
 ## 三、PostgreSQL 大版本自动迁移
 
@@ -79,7 +79,7 @@
 **原地对齐怎么工作**：脚本内部先 `legacy_align --probe` 探询（退出码 `0` 需要对齐 / `1` 结构已一致 /
 `2` 有阻断项 / `3` 无法判定），需要时打印 `legacy_align` 的完整预演（改名哪些表、补哪些列、建哪些表、
 内容类型与存量引用重指、账本重写），确认后才执行。跳过对齐用 `SKIP_INPLACE_ALIGN=1`（此时仍是旧行为，
-对按域分表之前的库会失败）；无人值守（CI / 演练 / 灾备脚本）用 `INPLACE_ALIGN=1 ./xadmin.sh upgrade 5.0.1`
+对按域分表之前的库会失败）；无人值守（CI / 演练 / 灾备脚本）用 `INPLACE_ALIGN=1 ./xadmin.sh upgrade vX.Y.Z`
 直接执行，**不要用管道喂 `y`**——流程里的 `docker exec -i` 会先读走 stdin，答案会被吞掉。
 
 升级收尾的 `post_upgrade` 会自动补「权限菜单 → 模型」绑定、按接口自身模型补齐字段白名单并清缓存
@@ -111,12 +111,14 @@ docker exec -i xadmin-server python manage.py post_upgrade
 
 ## 六、回滚
 
+升级成功/失败时终端会打印完整回滚指引，并自动带入本次的数据库备份文件路径。
+
 ```bash
 # 1. 停止服务
 ./xadmin.sh stop
 
-# 2. 恢复数据库（用第 3 步产生的备份文件）
-./xadmin.sh restore_db <备份文件路径>
+# 2. 恢复数据库（脚本会要求输入 y 确认，并强制停 server / celery 后再恢复）
+./xadmin.sh restore_db <本次数据库备份文件>
 
 # 3. 恢复配置（用第 4 步打印的配置备份路径）
 cp <配置备份文件> /opt/xadmin/config/config.txt
@@ -126,6 +128,9 @@ cp <配置备份文件> /opt/xadmin/config/config.txt
 ./xadmin.sh load_image
 ./xadmin.sh start
 ```
+
+> 旧镜像默认**不会**被清理；若在完成提示处手动选择了清理，离线回滚将无法进行，
+> 只能重新导入旧版本镜像包。`restore_db` 非交互执行可设 `YES_I_KNOW=1`。
 
 > 若升级过程中执行过 PostgreSQL 大版本迁移，回滚时还需把数据目录换回归档的
 > `data.pg16-<时间>`（并让旧版本镜像使用它）。

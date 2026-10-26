@@ -76,7 +76,7 @@ Redis 7.4 → 8.10 的数据目录兼容，无需处置；数据量很大时可�
 cd /opt/xa-installer-5x
 docker run --rm --network xadmin_net --env-file /opt/xadmin/config/config.txt \
   -e ALLOWED_HOSTS='["<本机IP>","127.0.0.1"]' \
-  --entrypoint python registry.cn-beijing.aliyuncs.com/nineaiyu/xadmin-server:5.0.1 \
+  --entrypoint python registry.cn-beijing.aliyuncs.com/nineaiyu/xadmin-server:X.Y.Z \
   -c "import os,sys; sys.path.insert(0,'/data/xadmin-server'); os.chdir('/data/xadmin-server'); \
       os.environ.setdefault('DJANGO_SETTINGS_MODULE','server.settings'); import django; django.setup(); \
       from django.core.management import call_command; call_command('upgrade_check', tag='v4.2.5')"
@@ -86,7 +86,7 @@ docker exec xadmin-postgresql pg_dump -U postgres -Fc -f /tmp/pre.dump xadmin
 docker cp xadmin-postgresql:/tmp/pre.dump /root/xa-pre-$(date +%F).dump
 
 # 3) 一条命令完成升级（判定 → 预演 → 执行 → 复检 → 账本 → migrate → 收尾）
-INPLACE_ALIGN=1 ./xadmin.sh upgrade 5.0.1
+INPLACE_ALIGN=1 ./xadmin.sh upgrade vX.Y.Z
 
 # 4) 启动与验收
 ./xadmin.sh start

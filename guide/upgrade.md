@@ -7,7 +7,7 @@
 | 部署方式 | 库的情况 | 升级方式 | 详细步骤 |
 |----------|----------|----------|----------|
 | 安装器一键部署 | 5.x，或**按域分表之后**的 4.x 库 | 原地升级（脚本自动完成预检 / 备份 / 认领 / 迁移 / 收尾） | [安装器升级（自动）](./upgrade-installer.md) |
-| 安装器一键部署 | **更早的 4.x 库**（表名仍是 `system_userinfo` / `system_uploadfile` 等） | **原地升级（推荐）**：备份 → `INPLACE_ALIGN=1 ./xadmin.sh upgrade 5.0.1` → 验收；体检判阻断时才走清库重建 + 回灌 | [手动升级 · 4.x → 5.x](./upgrade-manual.md#二、4-x-→-5-x-原地升级-推荐-清库重建-回灌-兜底) |
+| 安装器一键部署 | **更早的 4.x 库**（表名仍是 `system_userinfo` / `system_uploadfile` 等） | **原地升级（推荐）**：备份 → `INPLACE_ALIGN=1 ./xadmin.sh upgrade vX.Y.Z` → 验收；体检判阻断时才走清库重建 + 回灌 | [手动升级 · 4.x → 5.x](./upgrade-manual.md#二、4-x-→-5-x-原地升级-推荐-清库重建-回灌-兜底) |
 | 手工 compose / 源码部署 | 任意 | 原地升级，或重建 + 回灌 | [手动升级（compose / 源码）](./upgrade-manual.md) |
 
 `upgrade_check` 的结论与对应动作：
