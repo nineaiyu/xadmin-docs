@@ -5,7 +5,7 @@
 > 权威文档索引见[二次开发文档地图](/guide/index#二次开发文档地图)。
 
 > 机制原理（`queryset.filter` + `BaseDataPermissionFilter` / `get_filter_queryset`）见
-> server 仓库 [docs/architecture/data-permission.md](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/architecture/data-permission.md)。
+> server 仓库 [docs/architecture/permission.md](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/architecture/permission.md)。
 > 本章只讲二开者视角的操作步骤：把"谁能看到/操作哪些行、哪些字段"配置出来。
 
 ## 前置：确认数据权限机制已挂载

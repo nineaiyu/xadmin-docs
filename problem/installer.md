@@ -79,7 +79,7 @@ docker exec -i xadmin-server python manage.py post_upgrade    # 幂等：种子/
 备份只是兜底的一部分。媒体文件（附件物理文件）在 `${VOLUME_DIR}/server/data`，
 与数据库**分开**存放——完整的数据安全策略（备份频率 / 保留 / 演练 / PITR）见服务端仓库
 [ops/pitr.md](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/pitr.md) 与
-[ops/backup-drill-2026-Q4.md](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/backup-drill-2026-Q4.md)。
+[ops/deployment-docker.md](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/deployment-docker.md)。
 
 ### 10. 数据目录 / 配置目录在哪里
 
@@ -98,4 +98,4 @@ docker exec -i xadmin-server python manage.py post_upgrade    # 幂等：种子/
 需要更短的恢复窗口（RPO）时，走 WAL 归档 / PITR，见服务端仓库
 [ops/pitr.md](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/pitr.md)；
 备份策略与演练记录见
-[ops/backup-drill-2026-Q4.md](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/backup-drill-2026-Q4.md)。
+[ops/deployment-docker.md](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/ops/deployment-docker.md)。

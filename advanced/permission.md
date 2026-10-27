@@ -3,8 +3,7 @@
 > 权限是二开最需要理解的框架能力之一。**权威文档在 xadmin-server 仓库**（随代码发布、与实现同步）：
 >
 > - [权限体系设计](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/architecture/permission.md)（API / 数据 / 字段三层 + 应用级授权，含调试指引与测试地图）；
-> - [数据权限配置教程](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/architecture/data-permission.md)、
->   [字段权限配置教程](https://github.com/nineaiyu/xadmin-server/blob/dev/docs/architecture/field-permission.md)（配图操作步骤）；
+> - 数据 / 字段权限配置已并入权威设计文档（原独立教程已清理）；
 > - 完整索引见[二次开发文档地图](/guide/index#二次开发文档地图)。
 >
 > 本页只给"速记 + 排障入口"，具体语义以权威文档为准。
