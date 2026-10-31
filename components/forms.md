@@ -66,12 +66,12 @@
 敏感操作前的动态码校验：
 
 ```vue
-<!-- 渲染协议组件：经包装层挂载（http 层审批/确认协议自动唤起），不在页面模板直接使用 -->
+<!-- 渲染协议组件：经包装层挂载（http 层审批/确认协议自动唤起），不在页面模板直接使用；
+     卸载由包装层在 resolve/reject 后自行处理，组件不暴露销毁回调 -->
 <ReMfaConfirm
   confirm-type="reset_password"
   :resolve="onConfirmed"
   :reject="onCancelled"
-  :destroy="unmount"
 />
 ```
 
