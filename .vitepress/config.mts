@@ -95,6 +95,10 @@ export default defineConfig({
                         link: '/devguidelines/client'
                     },
                     {
+                        text: '前端 UI 开发规范',
+                        link: '/devguidelines/client-ui'
+                    },
+                    {
                         text: '服务端开发之Windows平台',
                         link: '/devguidelines/windows'
                     }
